@@ -1203,11 +1203,11 @@ progressBar.addEventListener('input', () => {
         // You can get one from Google Cloud Console (APIs & Services -> Credentials).
         // For security, it's highly recommended to restrict your API key to your domain.
         async function fetchYouTubeVideos(query) {
-            const YOUTUBE_API_KEY = 'AIzaSyAdQGqaezhWNMQWdwvkE2gWweV1Riy4l6E'; // <<< REPLACE THIS WITH YOUR YOUTUBE API KEY
+            const YOUTUBE_API_KEY = 'AIzaSyBMrqaIDnF4B59eVximFZntDLYdn7K4r2k'; // <<< REPLACE THIS WITH YOUR YOUTUBE API KEY
             const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key=${YOUTUBE_API_KEY}&maxResults=5`; 
 
             if (YOUTUBE_API_KEY === 'YOUTUBE_API_KEY' || !YOUTUBE_API_KEY) {
-                console.error("YouTube API Key is not set. Please replace 'AIzaSyAdQGqaezhWNMQWdwvkE2gWweV1Riy4l6E' with your actual API key.");
+                console.error("YouTube API Key is not set. Please replace 'AIzaSyBMrqaIDnF4B59eVximFZntDLYdn7K4r2k' with your actual API key.");
                 musicPlayerMessage.textContent = "YouTube API Key is missing. Please set it up to search for music.";
                 musicPlayerMessage.classList.remove('hidden');
                 return [];
