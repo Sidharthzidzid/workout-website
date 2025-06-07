@@ -99,6 +99,110 @@
         #recording-preview:not(.hidden) {
             transform: scale(1);
         }
+
+        /* Custom Music Player Styles */
+        #custom-music-player {
+            background-color: #f0f0f0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+            position: relative; /* For positioning background image */
+            overflow: hidden; /* Ensure image doesn't spill out */
+        }
+
+        #progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0; /* Default background */
+            border-radius: 4px;
+            appearance: none;
+            cursor: pointer;
+            outline: none; /* Remove default outline */
+            /* Dynamic background for progress fill */
+            background: linear-gradient(to right, #db2777 var(--progress, 0%), #e0e0e0 var(--progress, 0%));
+        }
+
+        #progress-bar::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #db2777;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 0 2px rgba(219, 39, 119, 0.4);
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+
+        #progress-bar::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #db2777;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 0 2px rgba(219, 39, 119, 0.4);
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+
+        #play-pause-btn {
+            background-color: #db2777;
+            color: white;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 20; /* Ensure button is above image */
+            position: relative; /* Make it stack properly */
+        }
+
+        #play-pause-btn:hover {
+            background-color: #c0266e;
+        }
+
+        #background-visualizer-gif {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cover the entire container */
+            z-index: 10; /* Behind other elements */
+            border-radius: 0.5rem; /* Match container border-radius */
+            opacity: 0.1; /* Make it subtle */
+            transition: opacity 0.3s ease-in-out;
+            display: block; /* Always visible */
+        }
+        
+        #custom-music-player > *:not(#background-visualizer-gif) {
+            position: relative;
+            z-index: 20; /* Bring other elements to front */
+            background-color: rgba(240, 240, 240, 0.8); /* Semi-transparent background for controls */
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+        }
+
+        /* Hide the actual YouTube iframe */
+        /* Use a containing div for the YT player and move it off-screen */
+        #youtube-player-container {
+            position: absolute;
+            left: -9999px; /* Move off-screen */
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1; /* Ensure it's behind everything */
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -125,6 +229,7 @@
                 <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
                     <a href="#home" class="border-pink-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Home</a>
                     <a href="#calorie-log" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Calorie Log</a>
+                    <a href="#workout-music" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Workout Music</a>
                     <a href="#workout-plan" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Workout Plan</a>
                     <a href="#progress" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Progress</a>
                 </div>
@@ -139,6 +244,7 @@
             <div class="pt-2 pb-3 space-y-1">
                 <a href="#home" class="bg-pink-50 border-pink-500 text-pink-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Home</a>
                 <a href="#calorie-log" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Calorie Log</a>
+                <a href="#workout-music" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Workout Music</a>
                 <a href="#workout-plan" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Workout Plan</a>
                 <a href="#progress" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Progress</a>
             </div>
@@ -207,6 +313,54 @@
         </div>
     </section>
 
+    <section class="py-12 bg-white" id="workout-music">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="lg:text-center">
+                <h2 class="text-base text-pink-600 font-semibold tracking-wide uppercase">Music</h2>
+                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                    Pump Up Your Workout!
+                </p>
+                <img src="https://cdn-icons-png.flaticon.com/512/2907/2907297.png" alt="Music Icon" class="mx-auto mt-4 w-16 h-16">
+                <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
+                    Search for your favorite workout tunes on YouTube.
+                </p>
+            </div>
+            <div class="mt-10 max-w-3xl mx-auto bg-gray-50 rounded-xl shadow-md p-6">
+                <div class="flex items-center space-x-2">
+                    <input type="text" id="music-search-input" class="flex-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2" placeholder="Search for workout music (e.g., 'motivational gym music')">
+                    <button id="music-search-btn" class="inline-flex items-center justify-center px-4 py-2 rounded-md border border-transparent bg-pink-600 text-white hover:bg-pink-700">
+                        <i class="fas fa-search"></i>
+                        <span class="ml-2">Search</span>
+                    </button>
+                </div>
+                
+                <p id="music-player-message" class="text-red-500 text-sm mt-2 hidden text-center"></p>
+
+                <div id="youtube-results-container" class="mt-6 hidden">
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Search Results:</h3>
+                    <ul id="youtube-video-list" class="divide-y divide-gray-200"></ul>
+                </div>
+                
+                <div id="custom-music-player" class="mt-6 hidden">
+                    <img id="background-visualizer-gif" src="https://i.pinimg.com/originals/33/87/a8/3387a8e9cf7b43fdf627b6f9680ff83e.gif" alt="Audio Visualizer GIF" />
+                    <h3 id="now-playing-title" class="text-lg font-semibold text-gray-900 text-center"></h3>
+                    <div class="w-full flex items-center space-x-2">
+                        <span id="current-time" class="text-sm text-gray-600">00:00</span>
+                        <input type="range" id="progress-bar" value="0" min="0" max="100" class="flex-1">
+                        <span id="duration-time" class="text-sm text-gray-600">00:00</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button id="play-pause-btn">
+                            <i class="fas fa-play" id="play-pause-icon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="youtube-player-container"></div>
+            </div>
+        </div>
+    </section>
+
     <section class="py-12 bg-white" id="workout-plan">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="lg:text-center">
@@ -235,7 +389,7 @@
                     <div>
                         <h4 class="text-lg font-medium text-gray-900">Days Completed: <span id="days-completed">0</span>/30</h4>
                         <div class="w-full bg-gray-200 rounded-full h-4 mt-2">
-                            <div id="progress-bar" class="bg-pink-600 h-4 rounded-full" style="width: 0%"></div>
+                            <div id="overall-progress-bar" class="bg-pink-600 h-4 rounded-full" style="width: 0%"></div>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-6 text-center">
@@ -279,6 +433,137 @@
     <video id="recording-preview" class="hidden" autoplay muted></video>
 
     <script>
+    // Load the YouTube Iframe API asynchronously
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api"; // Corrected YouTube API URL
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    let player; // This will hold the YouTube player object for music
+    let progressBarInterval; // Interval for updating the music progress bar
+    let currentPlayingVideoId = null; // Store the ID of the currently playing music video
+    
+    // HTML Image for Background Visualizer (GIF)
+    const backgroundVisualizerGif = document.getElementById('background-visualizer-gif');
+    const BACKGROUND_GIF_URL = 'https://i.pinimg.com/originals/33/87/a8/3387a8e9cf7b43fdf627b6f9680ff83e.gif';
+
+    // --- YouTube API ready function ---
+    function onYouTubeIframeAPIReady() {
+        // This function is called by the YouTube IFrame Player API when it's ready.
+        // The player will be initialized dynamically when a search result is found.
+        console.log("YouTube Iframe API is ready!");
+    }
+
+    // Utility function to format time
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    // --- YouTube Player State Change Listener ---
+    function onPlayerStateChange(event) {
+        const playPauseIcon = document.getElementById('play-pause-icon');
+        const progressBar = document.getElementById('progress-bar');
+        const musicPlayerMessage = document.getElementById('music-player-message');
+        const currentTimeDisplay = document.getElementById('current-time');
+        const durationTimeDisplay = document.getElementById('duration-time');
+        const nowPlayingTitle = document.getElementById('now-playing-title'); // Added this for potential title update
+
+        console.log("Player state changed:", event.data);
+
+        switch (event.data) {
+            case YT.PlayerState.PLAYING:
+                playPauseIcon.classList.remove('fa-play');
+                playPauseIcon.classList.add('fa-pause');
+                startProgressBarUpdate(); // Start updating the progress bar
+                // We want the GIF always visible, so no need to explicitly start/stop here.
+                backgroundVisualizerGif.style.opacity = 0.2; // Slightly more visible when playing
+                musicPlayerMessage.classList.add('hidden'); // Hide any previous messages
+
+                // Set max value for progress bar and initial duration display
+                if (player && player.getDuration()) {
+                    progressBar.max = player.getDuration();
+                    durationTimeDisplay.textContent = formatTime(player.getDuration());
+                }
+                break;
+            case YT.PlayerState.PAUSED:
+            case YT.PlayerState.ENDED:
+                playPauseIcon.classList.remove('fa-pause');
+                playPauseIcon.classList.add('fa-play');
+                clearInterval(progressBarInterval); // Stop updating the progress bar
+                backgroundVisualizerGif.style.opacity = 0.1; // Back to subtle when paused/ended
+                if (event.data === YT.PlayerState.ENDED) {
+                    progressBar.value = 0; // Reset progress bar
+                    progressBar.style.setProperty('--progress', '0%'); // Reset visual fill
+                    currentTimeDisplay.textContent = '00:00';
+                    nowPlayingTitle.textContent = "Song Ended"; // Update title
+                }
+                break;
+            case YT.PlayerState.BUFFERING:
+                musicPlayerMessage.innerHTML = "Loading...";
+                musicPlayerMessage.classList.remove('hidden');
+                backgroundVisualizerGif.style.opacity = 0.1; // Keep subtle during buffering
+                // Ensure player is not null before calling getDuration
+                if (player && player.getDuration && player.getDuration() > 0) {
+                     progressBar.max = player.getDuration();
+                     durationTimeDisplay.textContent = formatTime(player.getDuration());
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    // --- YouTube Player Error Listener ---
+    function onPlayerError(event) {
+        const musicPlayerMessage = document.getElementById('music-player-message');
+        const customMusicPlayer = document.getElementById('custom-music-player');
+        const youtubeResultsContainer = document.getElementById('youtube-results-container');
+        
+        console.error("YouTube Player Error:", event.data);
+        
+        let errorMessage = "An error occurred while playing this video.";
+        if (event.data === 150 || event.data === 101) {
+            if (currentPlayingVideoId) {
+                errorMessage = `This video is not available for embedding or cannot be played. Please try another song or play directly on <a href="https://www.youtube.com/watch?v=${currentPlayingVideoId}" target="_blank" class="text-blue-600 hover:underline">YouTube</a>.`;
+            } else {
+                errorMessage = "This video is not available for embedding or cannot be played. Please try another song or play directly on YouTube.";
+            }
+        } else if (event.data === 2) {
+            errorMessage = "The video ID is invalid or belongs to a private video.";
+        } else if (event.data === 5) {
+            errorMessage = "The requested content cannot be played in an HTML5 player.";
+        }
+
+        musicPlayerMessage.innerHTML = errorMessage; // Use innerHTML to render the link
+        musicPlayerMessage.classList.remove('hidden'); // Show error message
+        customMusicPlayer.classList.add('hidden');    // Hide custom player
+        youtubeResultsContainer.classList.remove('hidden'); // Show search results again
+        
+        // Clean up player and background visualizer
+        if (player) {
+            player.destroy();
+            player = null;
+        }
+        clearInterval(progressBarInterval);
+        backgroundVisualizerGif.style.opacity = 0.1; // Revert GIF opacity on error
+        document.getElementById('play-pause-icon').classList.remove('fa-pause');
+        document.getElementById('play-pause-icon').classList.add('fa-play');
+    }
+
+
+    // --- Background GIF Functions ---
+    // The GIF is now always 'display: block' in CSS, we only control its opacity here.
+    function startBackgroundVisualizer() {
+        // We can optionally increase opacity here if needed when playing, but it's now handled in onPlayerStateChange
+    }
+
+    function stopBackgroundVisualizer() {
+        // No explicit stop needed, handled by opacity change in onPlayerStateChange
+    }
+
+
     document.addEventListener('DOMContentLoaded', () => {
 
         // --- DATA ---
@@ -347,6 +632,23 @@
         const foodLogList = document.getElementById('food-log-list');
         const modal = document.getElementById('workout-complete-modal');
         const recordingPreview = document.getElementById('recording-preview');
+
+        // --- YouTube Music Search & Player DOM Elements ---
+        const musicSearchInput = document.getElementById('music-search-input');
+        const musicSearchBtn = document.getElementById('music-search-btn');
+        const youtubePlayerContainer = document.getElementById('youtube-player-container'); // Corrected to target the container
+        const youtubeResultsContainer = document.getElementById('youtube-results-container'); 
+        const youtubeVideoList = document.getElementById('youtube-video-list');           
+        
+        // Custom Player Controls
+        const customMusicPlayer = document.getElementById('custom-music-player');
+        const nowPlayingTitle = document.getElementById('now-playing-title');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const playPauseIcon = document.getElementById('play-pause-icon');
+        const progressBar = document.getElementById('progress-bar'); // Music player's progress bar
+        const currentTimeDisplay = document.getElementById('current-time');
+        const durationTimeDisplay = document.getElementById('duration-time');
+        const musicPlayerMessage = document.getElementById('music-player-message'); // New element for messages
         
         // --- FUNCTIONS ---
 
@@ -364,7 +666,8 @@
             const progressPercentage = (daysCompleted / 30) * 100;
             
             document.getElementById('days-completed').textContent = daysCompleted;
-            document.getElementById('progress-bar').style.width = `${progressPercentage}%`;
+            // Targeting the correct progress bar for the overall workout plan
+            document.getElementById('overall-progress-bar').style.width = `${progressPercentage}%`; 
             document.getElementById('total-calories-burned').textContent = Math.round(totalCaloriesBurned);
             document.getElementById('total-exercise-minutes').textContent = Math.round(totalExerciseMinutes);
             
@@ -413,7 +716,8 @@
             
             workoutPlan.forEach(workout => {
                 const isCompleted = completedWorkouts.some(cw => cw.day === workout.day);
-                const isLocked = workout.day > lastCompletedDay + 1 && !isCompleted;
+                // A day is locked if it's more than 1 day after the last completed day, and not already completed
+                const isLocked = workout.day > lastCompletedDay + 1 && !isCompleted; 
 
                 const card = document.createElement('div');
                 card.className = `p-6 bg-gray-50 rounded-lg shadow-sm exercise-card ${isLocked ? 'locked' : ''}`;
@@ -486,6 +790,8 @@
             let secondsRemaining = workout.duration * 60;
             const timerDisplay = document.getElementById(`timer-day-${day}`);
             const caloriesPerSecond = workout.calories / (workout.duration * 60);
+
+            timerDisplay.textContent = `${(workout.duration).toString().padStart(2, '0')}:00`; // Initialize timer display
 
             timerInterval = setInterval(() => {
                 secondsRemaining--;
@@ -672,10 +978,278 @@
             clearInterval(timerInterval);
         });
 
+        // --- YouTube Music Search & Player Functions ---
+        musicSearchBtn.addEventListener('click', searchYouTube);
+        musicSearchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                searchYouTube();
+            }
+        });
+
+        youtubeVideoList.addEventListener('click', (e) => {
+            const listItem = e.target.closest('li');
+            if (listItem && listItem.dataset.videoid) {
+                const videoTitle = listItem.querySelector('span.font-medium').textContent;
+                playYouTubeVideo(listItem.dataset.videoid, videoTitle);
+            }
+        });
+
+        playPauseBtn.addEventListener('click', () => {
+            if (!player) {
+                musicPlayerMessage.textContent = "Please select a song first.";
+                musicPlayerMessage.classList.remove('hidden');
+                return;
+            }
+
+            // Ensure player is ready before attempting to play/pause
+            if (player.getPlayerState() === YT.PlayerState.PLAYING || player.getPlayerState() === YT.PlayerState.BUFFERING) {
+                player.pauseVideo();
+            } else {
+                player.playVideo();
+            }
+        });
+
+        progressBar.addEventListener('input', () => {
+            if (player && player.getDuration()) { // Ensure player and duration are available
+                const newTime = parseFloat(progressBar.value);
+                player.seekTo(newTime, true); // Seek to the new time
+                currentTimeDisplay.textContent = formatTime(newTime);
+                const progressPercent = (newTime / player.getDuration()) * 100;
+                progressBar.style.setProperty('--progress', `${progressPercent}%`);
+            }
+        });
+
+        function startProgressBarUpdate() {
+    if (progressBarInterval) clearInterval(progressBarInterval);
+    progressBarInterval = setInterval(() => {
+        if (player && typeof player.getCurrentTime === 'function' && typeof player.getDuration === 'function') {
+            const currentTime = player.getCurrentTime();
+            const duration = player.getDuration();
+
+            // Only update if duration is valid and not a live stream
+            if (duration && duration > 0 && currentTime >= 0) {
+                progressBar.max = duration;
+                progressBar.value = currentTime;
+
+                const progressPercent = (currentTime / duration) * 100;
+                progressBar.style.setProperty('--progress', `${progressPercent}%`);
+                currentTimeDisplay.textContent = formatTime(currentTime);
+                durationTimeDisplay.textContent = formatTime(duration);
+            } else {
+                progressBar.value = 0;
+                progressBar.style.setProperty('--progress', '0%');
+                currentTimeDisplay.textContent = '00:00';
+                durationTimeDisplay.textContent = '00:00';
+            }
+        }
+    }, 500); // update every 500ms
+}
+
+function onPlayerStateChange(event) {
+    const playPauseIcon = document.getElementById('play-pause-icon');
+    const currentTimeDisplay = document.getElementById('current-time');
+    const durationTimeDisplay = document.getElementById('duration-time');
+
+    switch (event.data) {
+        case YT.PlayerState.PLAYING:
+            playPauseIcon.classList.remove('fa-play');
+            playPauseIcon.classList.add('fa-pause');
+            startProgressBarUpdate();
+            backgroundVisualizerGif.style.opacity = 0.2;
+            musicPlayerMessage.classList.add('hidden');
+            if (player && player.getDuration()) {
+                progressBar.max = player.getDuration();
+                durationTimeDisplay.textContent = formatTime(player.getDuration());
+            }
+            break;
+
+        case YT.PlayerState.PAUSED:
+        case YT.PlayerState.ENDED:
+            playPauseIcon.classList.remove('fa-pause');
+            playPauseIcon.classList.add('fa-play');
+            clearInterval(progressBarInterval);
+            backgroundVisualizerGif.style.opacity = 0.1;
+            if (event.data === YT.PlayerState.ENDED) {
+                progressBar.value = 0;
+                progressBar.style.setProperty('--progress', '0%');
+                currentTimeDisplay.textContent = '00:00';
+                nowPlayingTitle.textContent = "Song Ended";
+            }
+            break;
+
+        case YT.PlayerState.BUFFERING:
+            musicPlayerMessage.innerHTML = "Loading...";
+            musicPlayerMessage.classList.remove('hidden');
+            backgroundVisualizerGif.style.opacity = 0.1;
+            if (player && player.getDuration() > 0) {
+                progressBar.max = player.getDuration();
+                durationTimeDisplay.textContent = formatTime(player.getDuration());
+            }
+            break;
+    }
+}
+
+progressBar.addEventListener('input', () => {
+    if (player && player.getDuration()) {
+        const newTime = parseFloat(progressBar.value);
+        player.seekTo(newTime, true);
+        currentTimeDisplay.textContent = formatTime(newTime);
+        const progressPercent = (newTime / player.getDuration()) * 100;
+        progressBar.style.setProperty('--progress', `${progressPercent}%`);
+    }
+});
+
+        async function searchYouTube() {
+            const query = musicSearchInput.value.trim();
+            if (!query) {
+                musicPlayerMessage.textContent = "Please enter a song or artist to search.";
+                musicPlayerMessage.classList.remove('hidden');
+                youtubeResultsContainer.classList.add('hidden'); 
+                customMusicPlayer.classList.add('hidden');
+                if (player) {
+                    player.destroy();
+                    player = null;
+                }
+                return; // No need to stop GIF, it's always visible.
+            }
+
+            musicPlayerMessage.classList.add('hidden');
+            youtubeResultsContainer.classList.add('hidden'); 
+            customMusicPlayer.classList.add('hidden');
+            youtubeVideoList.innerHTML = ''; 
+
+            try {
+                const videos = await fetchYouTubeVideos(query); 
+
+                if (videos && videos.length > 0) {
+                    youtubeResultsContainer.classList.remove('hidden'); 
+                    videos.forEach(video => {
+                        const li = document.createElement('li');
+                        li.className = 'py-2 flex items-center cursor-pointer hover:bg-gray-100';
+                        li.dataset.videoid = video.videoId;
+                        li.innerHTML = `
+                            <img src="${video.thumbnail}" alt="${video.title}" class="w-16 h-auto rounded mr-4">
+                            <div>
+                                <span class="font-medium text-gray-800">${video.title}</span>
+                                <p class="text-sm text-gray-500">${video.channelTitle}</p>
+                            </div>
+                        `;
+                        youtubeVideoList.appendChild(li);
+                    });
+                } else {
+                    musicPlayerMessage.textContent = "No music found for your search. Try a different query.";
+                    musicPlayerMessage.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error("Error searching YouTube:", error);
+                musicPlayerMessage.textContent = "An error occurred while searching for music. Please ensure your YouTube API key is valid and try again.";
+                musicPlayerMessage.classList.remove('hidden');
+            }
+        }
+
+        function playYouTubeVideo(videoId, title) {
+            youtubeResultsContainer.classList.add('hidden'); // Hide results list
+            musicPlayerMessage.classList.add('hidden'); // Hide any search/error messages
+
+            // Set current video ID for error linking
+            currentPlayingVideoId = videoId; 
+
+            // Ensure custom player is visible before creating the YT player,
+            // as onPlayerReady might fire very quickly.
+            customMusicPlayer.classList.remove('hidden'); 
+            nowPlayingTitle.textContent = `Now Playing: ${title}`;
+            currentTimeDisplay.textContent = '00:00';
+            durationTimeDisplay.textContent = '00:00';
+            progressBar.value = 0; // Set initial progress bar value to 0
+            progressBar.style.setProperty('--progress', '0%'); // Reset visual fill
+
+            if (player) {
+                player.destroy(); // Destroy existing player if any
+                player = null; // Clear player reference
+            }
+
+            // The 'youtube-player-container' div is where the API will build the iframe
+            player = new YT.Player('youtube-player-container', { // Target the container div
+                height: '315', // These dimensions don't matter much as it's hidden
+                width: '560',
+                videoId: videoId,
+                playerVars: {
+                    'autoplay': 1,
+                    'controls': 0,        // Hide YouTube's controls
+                    'disablekb': 1,       // Disable keyboard controls
+                    'modestbranding': 1,  // Hide YouTube logo in control bar
+                    'rel': 0,             // Do not show related videos at the end
+                    'showinfo': 0,        // Do not show video title and uploader
+                    'iv_load_policy': 3   // Hide video annotations by default
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange, // Listen for state changes
+                    'onError': onPlayerError // Crucial for error handling
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            event.target.playVideo();
+            // Player is ready, onPlayerStateChange (PLAYING) will handle visual updates
+            // Ensure the GIF opacity is adjusted when ready
+            backgroundVisualizerGif.style.opacity = 0.2; 
+        }
+        
+        // IMPORTANT: To make `fetchYouTubeVideos` work, you will need a YouTube Data API v3 Key.
+        // Replace 'AIzaSyAdQGqaezhWNMQWdwvkE2gWweV1Riy4l6E' with your actual YouTube Data API Key.
+        // You can get one from Google Cloud Console (APIs & Services -> Credentials).
+        // For security, it's highly recommended to restrict your API key to your domain.
+        async function fetchYouTubeVideos(query) {
+            const YOUTUBE_API_KEY = 'AIzaSyAdQGqaezhWNMQWdwvkE2gWweV1Riy4l6E'; // <<< REPLACE THIS WITH YOUR YOUTUBE API KEY
+            const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key=${YOUTUBE_API_KEY}&maxResults=5`; 
+
+            if (YOUTUBE_API_KEY === 'YOUTUBE_API_KEY' || !YOUTUBE_API_KEY) {
+                console.error("YouTube API Key is not set. Please replace 'AIzaSyAdQGqaezhWNMQWdwvkE2gWweV1Riy4l6E' with your actual API key.");
+                musicPlayerMessage.textContent = "YouTube API Key is missing. Please set it up to search for music.";
+                musicPlayerMessage.classList.remove('hidden');
+                return [];
+            }
+
+            try {
+                const response = await fetch(searchUrl);
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.error("YouTube API Error:", data.error);
+                    musicPlayerMessage.textContent = `YouTube API Error: ${data.error.message || 'Unknown error'}. Check your API key and quota.`;
+                    musicPlayerMessage.classList.remove('hidden');
+                    return [];
+                }
+
+                if (data.items && data.items.length > 0) {
+                    return data.items.map(item => ({
+                        videoId: item.id.videoId,
+                        title: item.snippet.title,
+                        thumbnail: item.snippet.thumbnails.default.url,
+                        channelTitle: item.snippet.channelTitle
+                    }));
+                }
+                return [];
+            } catch (error) {
+                console.error("Error fetching YouTube video IDs:", error);
+                musicPlayerMessage.textContent = "An error occurred while fetching YouTube videos. Check your network connection or API key.";
+                musicPlayerMessage.classList.remove('hidden');
+                return [];
+            }
+        }
+
         // --- INITIALIZATION ---
         generateWorkoutPlan();
         updateProgressDashboard();
         updateFoodLogUI();
+
+        // Ensure GIF is visible on page load
+        if (backgroundVisualizerGif) {
+            backgroundVisualizerGif.src = BACKGROUND_GIF_URL; // Set GIF source
+            backgroundVisualizerGif.style.opacity = 0.1; // Set initial subtle opacity
+        }
 
     });
     </script>
