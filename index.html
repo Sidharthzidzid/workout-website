@@ -1,698 +1,1566 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Your Fitness Journey</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fd;
-            scroll-behavior: smooth;
-        }
-        
-        .hero-gradient {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .exercise-card {
-            transition: all 0.3s ease-in-out;
-        }
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 
-        .exercise-card.locked {
-            opacity: 0.6;
-            pointer-events: none;
-        }
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #f8f9fd;
+        scroll-behavior: smooth;
+      }
 
-        .exercise-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        
-        .gif-container {
-            width: 100%;
-            height: 200px;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #e2e8f0;
-            border-radius: 0.375rem;
-            margin-top: 0.5rem;
-        }
+      .hero-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
 
-        .gif-container img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
+      .exercise-card {
+        transition: all 0.3s ease-in-out;
+      }
 
-        .video-preview {
-            max-width: 100%;
-            border-radius: 0.375rem;
-            margin-top: 1rem;
-        }
+      .exercise-card.locked {
+        opacity: 0.6;
+        pointer-events: none;
+      }
 
-        /* Modal styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-        }
-        .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 0.5rem;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-        }
-        
-        /* Recording Preview Style */
-        #recording-preview {
-            position: fixed;
-            bottom: 1.5rem;
-            right: 1.5rem;
-            width: 220px;
-            height: 165px;
-            border-radius: 0.5rem;
-            border: 3px solid #db2777; /* A theme-matching pink border */
-            box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
-            z-index: 101; /* Higher than modal overlay */
-            object-fit: cover;
-            background-color: #1f2937; /* Dark background for loading state */
-            transform: scale(0);
-            transition: transform 0.3s ease-in-out;
-        }
+      .exercise-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
 
-        #recording-preview:not(.hidden) {
-            transform: scale(1);
-        }
+      .gif-container {
+        width: 100%;
+        height: 200px;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #e2e8f0;
+        border-radius: 0.375rem;
+        margin-top: 0.5rem;
+      }
 
-        /* Custom Music Player Styles */
-        #custom-music-player {
-            background-color: #f0f0f0;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
-            position: relative; /* For positioning background image */
-            overflow: hidden; /* Ensure image doesn't spill out */
-        }
+      .gif-container img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
 
-        #progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e0e0e0; /* Default background */
-            border-radius: 4px;
-            appearance: none;
-            cursor: pointer;
-            outline: none; /* Remove default outline */
-            /* Dynamic background for progress fill */
-            background: linear-gradient(to right, #db2777 var(--progress, 0%), #e0e0e0 var(--progress, 0%));
-        }
+      .video-preview {
+        max-width: 100%;
+        border-radius: 0.375rem;
+        margin-top: 1rem;
+      }
 
-        #progress-bar::-webkit-slider-thumb {
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            background: #db2777;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 0 2px rgba(219, 39, 119, 0.4);
-            transition: background-color 0.2s, box-shadow 0.2s;
-        }
+      /* Modal styles */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+      }
 
-        #progress-bar::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            background: #db2777;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 0 2px rgba(219, 39, 119, 0.4);
-            transition: background-color 0.2s, box-shadow 0.2s;
-        }
+      .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        text-align: center;
+        max-width: 400px;
+        width: 90%;
+      }
 
-        #play-pause-btn {
-            background-color: #db2777;
-            color: white;
-            border-radius: 50%;
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 20; /* Ensure button is above image */
-            position: relative; /* Make it stack properly */
-        }
+      /* Recording Preview Style */
+      #recording-preview {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 220px;
+        height: 165px;
+        border-radius: 0.5rem;
+        border: 3px solid #db2777;
+        /* A theme-matching pink border */
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19),
+          0 6px 6px rgba(0, 0, 0, 0.23);
+        z-index: 101;
+        /* Higher than modal overlay */
+        object-fit: cover;
+        background-color: #1f2937;
+        /* Dark background for loading state */
+        transform: scale(0);
+        transition: transform 0.3s ease-in-out;
+      }
 
-        #play-pause-btn:hover {
-            background-color: #c0266e;
-        }
+      #recording-preview:not(.hidden) {
+        transform: scale(1);
+      }
 
-        #background-visualizer-gif {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Cover the entire container */
-            z-index: 10; /* Behind other elements */
-            border-radius: 0.5rem; /* Match container border-radius */
-            opacity: 0.1; /* Make it subtle */
-            transition: opacity 0.3s ease-in-out;
-            display: block; /* Always visible */
-        }
-        
-        #custom-music-player > *:not(#background-visualizer-gif) {
-            position: relative;
-            z-index: 20; /* Bring other elements to front */
-            background-color: rgba(240, 240, 240, 0.8); /* Semi-transparent background for controls */
-            padding: 0.5rem;
-            border-radius: 0.375rem;
-        }
+      /* Custom Music Player Styles */
+      #custom-music-player {
+        background-color: #f0f0f0;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+        position: relative;
+        /* For positioning background image */
+        overflow: hidden;
+        /* Ensure image doesn't spill out */
+      }
 
-        /* Hide the actual YouTube iframe */
-        /* Use a containing div for the YT player and move it off-screen */
-        #youtube-player-container {
-            position: absolute;
-            left: -9999px; /* Move off-screen */
-            width: 1px;
-            height: 1px;
-            overflow: hidden;
-            opacity: 0;
-            pointer-events: none;
-            z-index: -1; /* Ensure it's behind everything */
-        }
+      #progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e0e0e0;
+        /* Default background */
+        border-radius: 4px;
+        appearance: none;
+        cursor: pointer;
+        outline: none;
+        /* Remove default outline */
+        /* Dynamic background for progress fill */
+        background: linear-gradient(
+          to right,
+          #db2777 var(--progress, 0%),
+          #e0e0e0 var(--progress, 0%)
+        );
+      }
+
+      #progress-bar::-webkit-slider-thumb {
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        background: #db2777;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 0 0 2px rgba(219, 39, 119, 0.4);
+        transition: background-color 0.2s, box-shadow 0.2s;
+      }
+
+      #progress-bar::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        background: #db2777;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 0 0 2px rgba(219, 39, 119, 0.4);
+        transition: background-color 0.2s, box-shadow 0.2s;
+      }
+
+      #play-pause-btn {
+        background-color: #db2777;
+        color: white;
+        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        z-index: 20;
+        /* Ensure button is above image */
+        position: relative;
+        /* Make it stack properly */
+      }
+
+      #play-pause-btn:hover {
+        background-color: #c0266e;
+      }
+
+      #background-visualizer-gif {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        /* Cover the entire container */
+        z-index: 10;
+        /* Behind other elements */
+        border-radius: 0.5rem;
+        /* Match container border-radius */
+        opacity: 0.1;
+        /* Make it subtle */
+        transition: opacity 0.3s ease-in-out;
+        display: block;
+        /* Always visible */
+      }
+
+      #custom-music-player > *:not(#background-visualizer-gif) {
+        position: relative;
+        z-index: 20;
+        /* Bring other elements to front */
+        background-color: rgba(240, 240, 240, 0.8);
+        /* Semi-transparent background for controls */
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+      }
+
+      /* Hide the actual YouTube iframe */
+      /* Use a containing div for the YT player and move it off-screen */
+      #youtube-player-container {
+        position: absolute;
+        left: -9999px;
+        /* Move off-screen */
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+        pointer-events: none;
+        z-index: -1;
+        /* Ensure it's behind everything */
+      }
     </style>
-</head>
-<body class="bg-gray-100">
+  </head>
 
+  <body class="bg-gray-100">
     <div id="workout-complete-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h3 class="text-2xl font-bold text-pink-600 mb-4">Time's Up!</h3>
-            <p class="text-gray-700 mb-6">Great job! Do you want to mark this workout as complete?</p>
-            <div class="flex justify-center space-x-4">
-                <button id="modal-complete-btn" class="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Yes, Complete it!</button>
-                <button id="modal-dismiss-btn" class="px-6 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">Not Now</button>
-            </div>
+      <div class="modal-content">
+        <h3 class="text-2xl font-bold text-pink-600 mb-4">Time's Up!</h3>
+        <p class="text-gray-700 mb-6">
+          Great job! Do you want to mark this workout as complete?
+        </p>
+        <div class="flex justify-center space-x-4">
+          <button
+            id="modal-complete-btn"
+            class="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+          >
+            Yes, Complete it!
+          </button>
+          <button
+            id="modal-dismiss-btn"
+            class="px-6 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
+          >
+            Not Now
+          </button>
         </div>
+      </div>
     </div>
 
-
     <nav class="bg-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <i class="fas fa-heartbeat text-pink-500 text-2xl"></i>
-                    <span class="ml-2 text-xl font-bold text-gray-900">FitForLove</span>
-                </div>
-                <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                    <a href="#home" class="border-pink-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Home</a>
-                    <a href="#calorie-log" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Calorie Log</a>
-                    <a href="#workout-music" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Workout Music</a>
-                    <a href="#workout-plan" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Workout Plan</a>
-                    <a href="#progress" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Progress</a>
-                </div>
-                <div class="-mr-2 flex items-center sm:hidden">
-                    <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none" id="mobile-menu-button">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                </div>
-            </div>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <i class="fas fa-heartbeat text-pink-500 text-2xl"></i>
+            <span class="ml-2 text-xl font-bold text-gray-900">FitForLove</span>
+          </div>
+          <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <a
+              href="#home"
+              class="border-pink-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+              >Home</a
+            >
+            <a
+              href="#calorie-log"
+              class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+              >Calorie Log</a
+            >
+            <a
+              href="#workout-music"
+              class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+              >Workout Music</a
+            >
+            <a
+              href="#workout-plan"
+              class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+              >Workout Plan</a
+            >
+            <a
+              href="#progress"
+              class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+              >Progress</a
+            >
+          </div>
+          <div class="-mr-2 flex items-center sm:hidden">
+            <button
+              type="button"
+              class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none"
+              id="mobile-menu-button"
+            >
+              <i class="fas fa-bars"></i>
+            </button>
+          </div>
         </div>
-        <div class="hidden sm:hidden" id="mobile-menu">
-            <div class="pt-2 pb-3 space-y-1">
-                <a href="#home" class="bg-pink-50 border-pink-500 text-pink-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Home</a>
-                <a href="#calorie-log" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Calorie Log</a>
-                <a href="#workout-music" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Workout Music</a>
-                <a href="#workout-plan" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Workout Plan</a>
-                <a href="#progress" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Progress</a>
-            </div>
+      </div>
+      <div class="hidden sm:hidden" id="mobile-menu">
+        <div class="pt-2 pb-3 space-y-1">
+          <a
+            href="#home"
+            class="bg-pink-50 border-pink-500 text-pink-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+            >Home</a
+          >
+          <a
+            href="#calorie-log"
+            class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+            >Calorie Log</a
+          >
+          <a
+            href="#workout-music"
+            class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+            >Workout Music</a
+          >
+          <a
+            href="#workout-plan"
+            class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+            >Workout Plan</a
+          >
+          <a
+            href="#progress"
+            class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+            >Progress</a
+          >
         </div>
+      </div>
     </nav>
 
     <section class="hero-gradient text-white" id="home">
-        <div class="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8 text-center">
-            <h1 class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl">
-                <span class="block">Your Fitness Journey</span>
-                <span class="block">Starts Here</span>
-            </h1>
-            <p class="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-                A personalized 30-day weight loss program created with love to help you achieve your goals and become the best version of yourself.
-            </p>
-            <div class="mt-10 sm:flex sm:justify-center">
-                <a href="#workout-plan" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-pink-600 hover:bg-pink-700 md:py-4 md:text-lg md:px-10">
-                    <i class="fas fa-dumbbell mr-2"></i>
-                    Start Workout
-                </a>
-            </div>
+      <div
+        class="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8 text-center"
+      >
+        <h1
+          class="text-4xl tracking-tight font-extrabold sm:text-5xl md:text-6xl"
+        >
+          <span class="block">Your Fitness Journey</span>
+          <span class="block">Starts Here</span>
+        </h1>
+        <p
+          class="mt-3 max-w-md mx-auto text-base sm:text-lg md:mt-5 md:text-xl md:max-w-3xl"
+        >
+          A personalized 30-day weight loss program created with love to help
+          you achieve your goals and become the best version of yourself.
+        </p>
+        <div class="mt-10 sm:flex sm:justify-center">
+          <a
+            href="#workout-plan"
+            class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-pink-600 hover:bg-pink-700 md:py-4 md:text-lg md:px-10"
+          >
+            <i class="fas fa-dumbbell mr-2"></i>
+            Start Workout
+          </a>
         </div>
+      </div>
     </section>
 
     <section class="py-12 bg-gray-50" id="calorie-log">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="lg:text-center">
-                <h2 class="text-base text-pink-600 font-semibold tracking-wide uppercase">Nutrition</h2>
-                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                    Daily Calorie Log
-                </p>
-                <img src="https://cdn-icons-png.flaticon.com/512/11458/11458736.png" alt="Daily Calorie Log Icon" class="mx-auto mt -4 w-16 h-16">
-                 <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
-                    Log the food you eat to track your daily calorie intake.
-                </p>
-            </div>
-            <div class="mt-10 max-w-3xl mx-auto bg-white rounded-xl shadow-md p-6">
-                <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 items-end">
-                    <div class="sm:col-span-3">
-                        <label for="food-search" class="block text-sm font-medium text-gray-700">Search for a food item</label>
-                        <input type="text" id="food-search" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2" placeholder="e.g., Apple or Chicken Breast">
-                    </div>
-                    <div class="sm:col-span-1">
-                        <label for="food-quantity" class="block text-sm font-medium text-gray-700">Quantity</label>
-                        <input type="number" id="food-quantity" value="1" min="1" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2">
-                    </div>
-                    <div class="sm:col-span-1">
-                        <button id="add-food-btn" class="w-full inline-flex items-center justify-center px-4 py-2 rounded-md border border-transparent bg-indigo-600 text-white hover:bg-indigo-700">
-                            <i class="fas fa-plus"></i>
-                            <span class="ml-2">Add</span>
-                        </button>
-                    </div>
-                </div>
-                <p id="food-not-found" class="text-red-500 text-sm mt-1 hidden">Food not found. Try a more common item.</p>
-
-                <div class="mt-6">
-                    <h3 class="text-lg font-medium text-gray-900">Today's Log</h3>
-                    <ul id="food-log-list" class="mt-2 divide-y divide-gray-200">
-                        </ul>
-                    <div class="mt-4 pt-4 border-t-2 border-dashed flex justify-between items-center">
-                        <h4 class="text-xl font-bold text-gray-900">Total:</h4>
-                        <span id="total-calories-log" class="text-2xl font-bold text-pink-600">0 calories</span>
-                    </div>
-                </div>
-            </div>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="lg:text-center">
+          <h2
+            class="text-base text-pink-600 font-semibold tracking-wide uppercase"
+          >
+            Nutrition
+          </h2>
+          <p
+            class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl"
+          >
+            Daily Calorie Log
+          </p>
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/11458/11458736.png"
+            alt="Daily Calorie Log Icon"
+            class="mx-auto mt -4 w-16 h-16"
+          />
+          <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
+            Log the food you eat to track your daily calorie intake.
+          </p>
         </div>
+        <div class="mt-10 max-w-3xl mx-auto bg-white rounded-xl shadow-md p-6">
+          <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 items-end">
+            <div class="sm:col-span-3">
+              <label
+                for="food-search"
+                class="block text-sm font-medium text-gray-700"
+                >Search for a food item</label
+              >
+              <input
+                type="text"
+                id="food-search"
+                class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2"
+                placeholder="e.g., Apple or Chicken Breast"
+              />
+            </div>
+            <div class="sm:col-span-1">
+              <label
+                for="food-quantity"
+                class="block text-sm font-medium text-gray-700"
+                >Quantity</label
+              >
+              <input
+                type="number"
+                id="food-quantity"
+                value="1"
+                min="1"
+                class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2"
+              />
+            </div>
+            <div class="sm:col-span-1">
+              <button
+                id="add-food-btn"
+                class="w-full inline-flex items-center justify-center px-4 py-2 rounded-md border border-transparent bg-indigo-600 text-white hover:bg-indigo-700"
+              >
+                <i class="fas fa-plus"></i>
+                <span class="ml-2">Add</span>
+              </button>
+            </div>
+          </div>
+          <p id="food-not-found" class="text-red-500 text-sm mt-1 hidden">
+            Food not found. Try a more common item.
+          </p>
+
+          <div class="mt-6">
+            <h3 class="text-lg font-medium text-gray-900">Today's Log</h3>
+            <ul id="food-log-list" class="mt-2 divide-y divide-gray-200"></ul>
+            <div
+              class="mt-4 pt-4 border-t-2 border-dashed flex justify-between items-center"
+            >
+              <h4 class="text-xl font-bold text-gray-900">Total:</h4>
+              <span
+                id="total-calories-log"
+                class="text-2xl font-bold text-pink-600"
+                >0 calories</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="py-12 bg-white" id="workout-music">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="lg:text-center">
-                <h2 class="text-base text-pink-600 font-semibold tracking-wide uppercase">Music</h2>
-                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                    Pump Up Your Workout!
-                </p>
-                <img src="https://cdn-icons-png.flaticon.com/512/2907/2907297.png" alt="Music Icon" class="mx-auto mt-4 w-16 h-16">
-                <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
-                    Search for your favorite workout tunes on YouTube.
-                </p>
-            </div>
-            <div class="mt-10 max-w-3xl mx-auto bg-gray-50 rounded-xl shadow-md p-6">
-                <div class="flex items-center space-x-2">
-                    <input type="text" id="music-search-input" class="flex-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2" placeholder="Search for workout music (e.g., 'motivational gym music')">
-                    <button id="music-search-btn" class="inline-flex items-center justify-center px-4 py-2 rounded-md border border-transparent bg-pink-600 text-white hover:bg-pink-700">
-                        <i class="fas fa-search"></i>
-                        <span class="ml-2">Search</span>
-                    </button>
-                </div>
-                
-                <p id="music-player-message" class="text-red-500 text-sm mt-2 hidden text-center"></p>
-
-                <div id="youtube-results-container" class="mt-6 hidden">
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">Search Results:</h3>
-                    <ul id="youtube-video-list" class="divide-y divide-gray-200"></ul>
-                </div>
-                
-                <div id="custom-music-player" class="mt-6 hidden">
-                    <img id="background-visualizer-gif" src="https://i.pinimg.com/originals/33/87/a8/3387a8e9cf7b43fdf627b6f9680ff83e.gif" alt="Audio Visualizer GIF" />
-                    <h3 id="now-playing-title" class="text-lg font-semibold text-gray-900 text-center"></h3>
-                    <div class="w-full flex items-center space-x-2">
-                        <span id="current-time" class="text-sm text-gray-600">00:00</span>
-                        <input type="range" id="progress-bar" value="0" min="0" max="100" class="flex-1">
-                        <span id="duration-time" class="text-sm text-gray-600">00:00</span>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <button id="play-pause-btn">
-                            <i class="fas fa-play" id="play-pause-icon"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div id="youtube-player-container"></div>
-            </div>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="lg:text-center">
+          <h2
+            class="text-base text-pink-600 font-semibold tracking-wide uppercase"
+          >
+            Music
+          </h2>
+          <p
+            class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl"
+          >
+            Pump Up Your Workout!
+          </p>
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/2907/2907297.png"
+            alt="Music Icon"
+            class="mx-auto mt-4 w-16 h-16"
+          />
+          <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
+            Search for your favorite workout tunes on YouTube.
+          </p>
         </div>
+        <div
+          class="mt-10 max-w-3xl mx-auto bg-gray-50 rounded-xl shadow-md p-6"
+        >
+          <div class="flex items-center space-x-2">
+            <input
+              type="text"
+              id="music-search-input"
+              class="flex-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2"
+              placeholder="Search for workout music (e.g., 'motivational gym music')"
+            />
+            <button
+              id="music-search-btn"
+              class="inline-flex items-center justify-center px-4 py-2 rounded-md border border-transparent bg-pink-600 text-white hover:bg-pink-700"
+            >
+              <i class="fas fa-search"></i>
+              <span class="ml-2">Search</span>
+            </button>
+          </div>
+
+          <p
+            id="music-player-message"
+            class="text-red-500 text-sm mt-2 hidden text-center"
+          ></p>
+
+          <div id="youtube-results-container" class="mt-6 hidden">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">
+              Search Results:
+            </h3>
+            <ul id="youtube-video-list" class="divide-y divide-gray-200"></ul>
+          </div>
+
+          <div id="custom-music-player" class="mt-6 hidden">
+            <img
+              id="background-visualizer-gif"
+              src="https://i.pinimg.com/originals/33/87/a8/3387a8e9cf7b43fdf627b6f9680ff83e.gif"
+              alt="Audio Visualizer GIF"
+            />
+            <h3
+              id="now-playing-title"
+              class="text-lg font-semibold text-gray-900 text-center"
+            ></h3>
+            <div class="w-full flex items-center space-x-2">
+              <span id="current-time" class="text-sm text-gray-600">00:00</span>
+              <input
+                type="range"
+                id="progress-bar"
+                value="0"
+                min="0"
+                max="100"
+                class="flex-1"
+              />
+              <span id="duration-time" class="text-sm text-gray-600"
+                >00:00</span
+              >
+            </div>
+            <div class="flex items-center space-x-4">
+              <button id="play-pause-btn">
+                <i class="fas fa-play" id="play-pause-icon"></i>
+              </button>
+            </div>
+          </div>
+
+          <div id="youtube-player-container"></div>
+        </div>
+      </div>
     </section>
 
     <section class="py-12 bg-white" id="workout-plan">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="lg:text-center">
-                <h2 class="text-base text-pink-600 font-semibold tracking-wide uppercase">Workout Plan</h2>
-                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                    30-Day Weight Loss Journey
-                </p>
-            <img src="https://cdn-icons-png.flaticon.com/256/6851/6851545.png" alt="Workout Plan Icon" class="mx-auto mt-4 w-16 h-16">
-                
-            </div>
-            <div id="workout-container" class="mt-10 grid gap-8 md:grid-cols-2">
-                </div>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="lg:text-center">
+          <h2
+            class="text-base text-pink-600 font-semibold tracking-wide uppercase"
+          >
+            Workout Plan
+          </h2>
+          <p
+            class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl"
+          >
+            30-Day Weight Loss Journey
+          </p>
+          <img
+            src="https://cdn-icons-png.flaticon.com/256/6851/6851545.png"
+            alt="Workout Plan Icon"
+            class="mx-auto mt-4 w-16 h-16"
+          />
         </div>
+        <div
+          id="workout-container"
+          class="mt-10 grid gap-8 md:grid-cols-2"
+        ></div>
+      </div>
     </section>
 
     <section class="py-12 bg-gray-50" id="progress">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="lg:text-center">
-                <h2 class="text-base text-indigo-600 font-semibold tracking-wide uppercase">Progress</h2>
-                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                    Track Your Journey
-                </p>
-            </div>
-            <div class="mt-10 max-w-4xl mx-auto bg-white shadow rounded-lg p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                    <div>
-                        <h4 class="text-lg font-medium text-gray-900">Days Completed: <span id="days-completed">0</span>/30</h4>
-                        <div class="w-full bg-gray-200 rounded-full h-4 mt-2">
-                            <div id="overall-progress-bar" class="bg-pink-600 h-4 rounded-full" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-6 text-center">
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Calories Burned</dt>
-                            <img src="https://cdn.iconscout.com/icon/premium/png-512-thumb/calories-5436765-4592556.png?f=webp&w=256" alt="Calories Icon" class="w-8 h-8 mx-auto mt-2">
-                            <dd class="mt-1 text-3xl font-semibold text-gray-900" id="total-calories-burned">0</dd>
-                        </div>
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Exercise Minutes</dt>
-                            <img src="https://cdn-icons-png.flaticon.com/512/11011/11011186.png" alt="Exercise Icon" class="w-8 h-8 mx-auto mt-2">
-                            <dd class="mt-1 text-3xl font-semibold text-gray-900" id="total-exercise-minutes">0</dd>
-                        </div>
-                    </div>
-                </div>
-                 <div class="mt-8">
-                    <label for="current-weight" class="block text-sm font-medium text-gray-700">Current Weight (kg)
-                        <img src="https://png.pngtree.com/png-clipart/20220108/ourmid/pngtree-weighing-scale-png-image_4227183.png" alt="Weight Icon" class="inline-block w-6 h-6 ml-2">
-                    </label>
-                    <div class="mt-1 flex rounded-md shadow-sm">
-                        <input type="number" name="current-weight" id="current-weight" class="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-none rounded-l-md sm:text-sm border-gray-300 p-2" placeholder="e.g. 65">
-                        <button id="save-weight-btn" class="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">Save</button>
-                    </div>
-                    <p id="weight-change-info" class="text-sm text-gray-500 mt-2"></p>
-                </div>
-                <div class="mt-8">
-                     <button id="email-report-btn" class="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none">
-                        <i class="fas fa-paper-plane mr-2"></i> Email Workout Report To Your Hubby
-                    </button>
-                </div>
-            </div>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="lg:text-center">
+          <h2
+            class="text-base text-indigo-600 font-semibold tracking-wide uppercase"
+          >
+            Progress
+          </h2>
+          <p
+            class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl"
+          >
+            Track Your Journey
+          </p>
         </div>
+        <div class="mt-10 max-w-4xl mx-auto bg-white shadow rounded-lg p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div>
+              <h4 class="text-lg font-medium text-gray-900">
+                Days Completed: <span id="days-completed">0</span>/30
+              </h4>
+              <div class="w-full bg-gray-200 rounded-full h-4 mt-2">
+                <div
+                  id="overall-progress-bar"
+                  class="bg-pink-600 h-4 rounded-full"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-6 text-center">
+              <div>
+                <dt class="text-sm font-medium text-gray-500 truncate">
+                  Calories Burned
+                </dt>
+                <img
+                  src="https://cdn.iconscout.com/icon/premium/png-512-thumb/calories-5436765-4592556.png?f=webp&w=256"
+                  alt="Calories Icon"
+                  class="w-8 h-8 mx-auto mt-2"
+                />
+                <dd
+                  class="mt-1 text-3xl font-semibold text-gray-900"
+                  id="total-calories-burned"
+                >
+                  0
+                </dd>
+              </div>
+              <div>
+                <dt class="text-sm font-medium text-gray-500 truncate">
+                  Exercise Minutes
+                </dt>
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/11011/11011186.png"
+                  alt="Exercise Icon"
+                  class="w-8 h-8 mx-auto mt-2"
+                />
+                <dd
+                  class="mt-1 text-3xl font-semibold text-gray-900"
+                  id="total-exercise-minutes"
+                >
+                  0
+                </dd>
+              </div>
+            </div>
+          </div>
+          <div class="mt-8">
+            <label
+              for="current-weight"
+              class="block text-sm font-medium text-gray-700"
+              >Current Weight (kg)
+              <img
+                src="https://png.pngtree.com/png-clipart/20220108/ourmid/pngtree-weighing-scale-png-image_4227183.png"
+                alt="Weight Icon"
+                class="inline-block w-6 h-6 ml-2"
+              />
+            </label>
+            <div class="mt-1 flex rounded-md shadow-sm">
+              <input
+                type="number"
+                name="current-weight"
+                id="current-weight"
+                class="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-none rounded-l-md sm:text-sm border-gray-300 p-2"
+                placeholder="e.g. 65"
+              />
+              <button
+                id="save-weight-btn"
+                class="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 text-sm"
+              >
+                Save
+              </button>
+            </div>
+            <p id="weight-change-info" class="text-sm text-gray-500 mt-2"></p>
+          </div>
+          <div class="mt-8">
+            <button
+              id="email-report-btn"
+              class="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none"
+            >
+              <i class="fas fa-paper-plane mr-2"></i> Email Workout Report To
+              Your Hubby
+            </button>
+          </div>
+        </div>
+      </div>
     </section>
-    
+
     <footer class="bg-white">
-        <div class="max-w-7xl mx-auto py-12 px-4 text-center">
-            <p class="text-base text-gray-400">© 2025 FitForLove. Created with ❤️ for you.</p>
-        </div>
+      <div class="max-w-7xl mx-auto py-12 px-4 text-center">
+        <p class="text-base text-gray-400">
+          © 2025 FitForLove. Created with ❤️ for you.
+        </p>
+      </div>
     </footer>
 
     <video id="recording-preview" class="hidden" autoplay muted></video>
 
     <script>
-    // Load the YouTube Iframe API asynchronously
-    var tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api"; // Corrected YouTube API URL
-    var firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      // Load the YouTube Iframe API asynchronously
+      var tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api"; // Corrected YouTube API URL
+      var firstScriptTag = document.getElementsByTagName("script")[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-    let player; // This will hold the YouTube player object for music
-    let progressBarInterval; // Interval for updating the music progress bar
-    let currentPlayingVideoId = null; // Store the ID of the currently playing music video
-    
-    // HTML Image for Background Visualizer (GIF)
-    const backgroundVisualizerGif = document.getElementById('background-visualizer-gif');
-    const BACKGROUND_GIF_URL = 'https://i.pinimg.com/originals/33/87/a8/3387a8e9cf7b43fdf627b6f9680ff83e.gif';
+      let player; // This will hold the YouTube player object for music
+      let progressBarInterval; // Interval for updating the music progress bar
+      let currentPlayingVideoId = null; // Store the ID of the currently playing music video
 
-    // --- YouTube API ready function ---
-    function onYouTubeIframeAPIReady() {
+      // HTML Image for Background Visualizer (GIF)
+      const backgroundVisualizerGif = document.getElementById(
+        "background-visualizer-gif"
+      );
+      const BACKGROUND_GIF_URL =
+        "https://i.pinimg.com/originals/33/87/a8/3387a8e9cf7b43fdf627b6f9680ff83e.gif";
+
+      // --- YouTube API ready function ---
+      function onYouTubeIframeAPIReady() {
         // This function is called by the YouTube IFrame Player API when it's ready.
         // The player will be initialized dynamically when a search result is found.
         console.log("YouTube Iframe API is ready!");
-    }
+      }
 
-    // Utility function to format time
-    function formatTime(seconds) {
+      // Utility function to format time
+      function formatTime(seconds) {
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = Math.floor(seconds % 60);
-        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-    }
+        return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
+          .toString()
+          .padStart(2, "0")}`;
+      }
 
-    // --- YouTube Player State Change Listener ---
-    function onPlayerStateChange(event) {
-        const playPauseIcon = document.getElementById('play-pause-icon');
-        const progressBar = document.getElementById('progress-bar');
-        const musicPlayerMessage = document.getElementById('music-player-message');
-        const currentTimeDisplay = document.getElementById('current-time');
-        const durationTimeDisplay = document.getElementById('duration-time');
-        const nowPlayingTitle = document.getElementById('now-playing-title'); // Added this for potential title update
+      // --- YouTube Player State Change Listener ---
+      function onPlayerStateChange(event) {
+        const playPauseIcon = document.getElementById("play-pause-icon");
+        const progressBar = document.getElementById("progress-bar");
+        const musicPlayerMessage = document.getElementById(
+          "music-player-message"
+        );
+        const currentTimeDisplay = document.getElementById("current-time");
+        const durationTimeDisplay = document.getElementById("duration-time");
+        const nowPlayingTitle = document.getElementById("now-playing-title"); // Added this for potential title update
 
         console.log("Player state changed:", event.data);
 
         switch (event.data) {
-            case YT.PlayerState.PLAYING:
-                playPauseIcon.classList.remove('fa-play');
-                playPauseIcon.classList.add('fa-pause');
-                startProgressBarUpdate(); // Start updating the progress bar
-                // We want the GIF always visible, so no need to explicitly start/stop here.
-                backgroundVisualizerGif.style.opacity = 0.2; // Slightly more visible when playing
-                musicPlayerMessage.classList.add('hidden'); // Hide any previous messages
+          case YT.PlayerState.PLAYING:
+            playPauseIcon.classList.remove("fa-play");
+            playPauseIcon.classList.add("fa-pause");
+            startProgressBarUpdate(); // Start updating the progress bar
+            // We want the GIF always visible, so no need to explicitly start/stop here.
+            backgroundVisualizerGif.style.opacity = 0.2; // Slightly more visible when playing
+            musicPlayerMessage.classList.add("hidden"); // Hide any previous messages
 
-                // Set max value for progress bar and initial duration display
-                if (player && player.getDuration()) {
-                    progressBar.max = player.getDuration();
-                    durationTimeDisplay.textContent = formatTime(player.getDuration());
-                }
-                break;
-            case YT.PlayerState.PAUSED:
-            case YT.PlayerState.ENDED:
-                playPauseIcon.classList.remove('fa-pause');
-                playPauseIcon.classList.add('fa-play');
-                clearInterval(progressBarInterval); // Stop updating the progress bar
-                backgroundVisualizerGif.style.opacity = 0.1; // Back to subtle when paused/ended
-                if (event.data === YT.PlayerState.ENDED) {
-                    progressBar.value = 0; // Reset progress bar
-                    progressBar.style.setProperty('--progress', '0%'); // Reset visual fill
-                    currentTimeDisplay.textContent = '00:00';
-                    nowPlayingTitle.textContent = "Song Ended"; // Update title
-                }
-                break;
-            case YT.PlayerState.BUFFERING:
-                musicPlayerMessage.innerHTML = "Loading...";
-                musicPlayerMessage.classList.remove('hidden');
-                backgroundVisualizerGif.style.opacity = 0.1; // Keep subtle during buffering
-                // Ensure player is not null before calling getDuration
-                if (player && player.getDuration && player.getDuration() > 0) {
-                     progressBar.max = player.getDuration();
-                     durationTimeDisplay.textContent = formatTime(player.getDuration());
-                }
-                break;
-            default:
-                break;
+            // Set max value for progress bar and initial duration display
+            if (player && player.getDuration()) {
+              progressBar.max = player.getDuration();
+              durationTimeDisplay.textContent = formatTime(
+                player.getDuration()
+              );
+            }
+            break;
+          case YT.PlayerState.PAUSED:
+          case YT.PlayerState.ENDED:
+            playPauseIcon.classList.remove("fa-pause");
+            playPauseIcon.classList.add("fa-play");
+            clearInterval(progressBarInterval); // Stop updating the progress bar
+            backgroundVisualizerGif.style.opacity = 0.1; // Back to subtle when paused/ended
+            if (event.data === YT.PlayerState.ENDED) {
+              progressBar.value = 0; // Reset progress bar
+              progressBar.style.setProperty("--progress", "0%"); // Reset visual fill
+              currentTimeDisplay.textContent = "00:00";
+              nowPlayingTitle.textContent = "Song Ended"; // Update title
+            }
+            break;
+          case YT.PlayerState.BUFFERING:
+            musicPlayerMessage.innerHTML = "Loading...";
+            musicPlayerMessage.classList.remove("hidden");
+            backgroundVisualizerGif.style.opacity = 0.1; // Keep subtle during buffering
+            // Ensure player is not null before calling getDuration
+            if (player && player.getDuration && player.getDuration() > 0) {
+              progressBar.max = player.getDuration();
+              durationTimeDisplay.textContent = formatTime(
+                player.getDuration()
+              );
+            }
+            break;
+          default:
+            break;
         }
-    }
+      }
 
-    // --- YouTube Player Error Listener ---
-    function onPlayerError(event) {
-        const musicPlayerMessage = document.getElementById('music-player-message');
-        const customMusicPlayer = document.getElementById('custom-music-player');
-        const youtubeResultsContainer = document.getElementById('youtube-results-container');
-        
+      // --- YouTube Player Error Listener ---
+      function onPlayerError(event) {
+        const musicPlayerMessage = document.getElementById(
+          "music-player-message"
+        );
+        const customMusicPlayer = document.getElementById(
+          "custom-music-player"
+        );
+        const youtubeResultsContainer = document.getElementById(
+          "youtube-results-container"
+        );
+
         console.error("YouTube Player Error:", event.data);
-        
+
         let errorMessage = "An error occurred while playing this video.";
         if (event.data === 150 || event.data === 101) {
-            if (currentPlayingVideoId) {
-                errorMessage = `This video is not available for embedding or cannot be played. Please try another song or play directly on <a href="https://www.youtube.com/watch?v=${currentPlayingVideoId}" target="_blank" class="text-blue-600 hover:underline">YouTube</a>.`;
-            } else {
-                errorMessage = "This video is not available for embedding or cannot be played. Please try another song or play directly on YouTube.";
-            }
+          if (currentPlayingVideoId) {
+            errorMessage = `This video is not available for embedding or cannot be played. Please try another song or play directly on <a href="https://www.youtube.com/watch?v=${currentPlayingVideoId}" target="_blank" class="text-blue-600 hover:underline">YouTube</a>.`;
+          } else {
+            errorMessage =
+              "This video is not available for embedding or cannot be played. Please try another song or play directly on YouTube.";
+          }
         } else if (event.data === 2) {
-            errorMessage = "The video ID is invalid or belongs to a private video.";
+          errorMessage =
+            "The video ID is invalid or belongs to a private video.";
         } else if (event.data === 5) {
-            errorMessage = "The requested content cannot be played in an HTML5 player.";
+          errorMessage =
+            "The requested content cannot be played in an HTML5 player.";
         }
 
         musicPlayerMessage.innerHTML = errorMessage; // Use innerHTML to render the link
-        musicPlayerMessage.classList.remove('hidden'); // Show error message
-        customMusicPlayer.classList.add('hidden');    // Hide custom player
-        youtubeResultsContainer.classList.remove('hidden'); // Show search results again
-        
+        musicPlayerMessage.classList.remove("hidden"); // Show error message
+        customMusicPlayer.classList.add("hidden"); // Hide custom player
+        youtubeResultsContainer.classList.remove("hidden"); // Show search results again
+
         // Clean up player and background visualizer
         if (player) {
-            player.destroy();
-            player = null;
+          player.destroy();
+          player = null;
         }
         clearInterval(progressBarInterval);
         backgroundVisualizerGif.style.opacity = 0.1; // Revert GIF opacity on error
-        document.getElementById('play-pause-icon').classList.remove('fa-pause');
-        document.getElementById('play-pause-icon').classList.add('fa-play');
-    }
+        document.getElementById("play-pause-icon").classList.remove("fa-pause");
+        document.getElementById("play-pause-icon").classList.add("fa-play");
+      }
 
-
-    // --- Background GIF Functions ---
-    // The GIF is now always 'display: block' in CSS, we only control its opacity here.
-    function startBackgroundVisualizer() {
+      // --- Background GIF Functions ---
+      // The GIF is now always 'display: block' in CSS, we only control its opacity here.
+      function startBackgroundVisualizer() {
         // We can optionally increase opacity here if needed when playing, but it's now handled in onPlayerStateChange
-    }
+      }
 
-    function stopBackgroundVisualizer() {
+      function stopBackgroundVisualizer() {
         // No explicit stop needed, handled by opacity change in onPlayerStateChange
-    }
+      }
 
-
-    document.addEventListener('DOMContentLoaded', () => {
-
+      document.addEventListener("DOMContentLoaded", () => {
         // --- DATA ---
         const workoutPlan = [
-            // Week 1
-            { day: 1, name: "Beginner Cardio & Core", duration: 20, calories: 150, exercises: [{ name: "5 min warm-up walk", gif: "https://i.pinimg.com/originals/b3/8d/a2/b38da20664cbd52a10f93c349a8542b2.gif" }, { name: "30 sec jumping jacks (3 sets)", gif: "https://i.pinimg.com/originals/f3/0f/e9/f30fe940704b9f5e35ce56d4c2030c44.gif" }, { name: "15 squats (3 sets)", gif: "https://media.tenor.com/hiusknnY54UAAAAM/lateral-squat-stretching.gif" }, { name: "10 lunges per leg (2 sets)", gif: "https://i.pinimg.com/originals/50/2e/4e/502e4e797b053a650c9a1044ddb09925.gif" }, { name: "5 min cool-down stretch", gif: "https://s3assets.skimble.com/assets/2609748/image_iphone.jpg" }] },
-            { day: 2, name: "Total Body Strength", duration: 25, calories: 210, exercises: [{ name: "5 min dynamic warm-up", gif: "https://cdn.shopify.com/s/files/1/0645/8762/8770/files/overhead_reach_c8d0d367-a8ad-466a-b8af-356a380f0685_480x480.gif?v=1712296465" }, { name: "10 push-ups (3 sets)", gif: "https://spotebi.com/wp-content/uploads/2014/10/push-up-exercise-illustration.gif" }, { name: "12 plank shoulder taps (2 sets)", gif: "https://i.pinimg.com/originals/98/3a/ae/983aaeb3bd5dac317af8299eeb3a2707.gif" }, { name: "15 glute bridges (3 sets)", gif: "https://spotebi.com/wp-content/uploads/2015/01/glute-bridge-exercise-illustration-spotebi.gif" }, { name: "5 min cool-down stretch", gif: "https://spotebi.com/wp-content/uploads/2014/11/biceps-stretch-exercise-illustration.gif" }] },
-            { day: 3, name: "Active Recovery", duration: 15, calories: 80, exercises: [{ name: "15 min gentle walk & stretch", gif: "https://i.imgur.com/yVdQmmH.gif" }] },
-            { day: 4, name: "Lower Body Focus", duration: 25, calories: 180, exercises: [{ name: "5 min warm-up walk", gif: "https://i.imgur.com/yVdQmmH.gif" }, { name: "12 squats (3 sets)", gif: "https://i.imgur.com/tNxxE3A.gif" }, { name: "10 lunges per leg (3 sets)", gif: "https://i.imgur.com/QJ2j3yv.gif" }, { name: "15 calf raises (2 sets)", gif: "https://i.imgur.com/s6a2s5k.gif" }, { name: "5 min cool-down stretch", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 5, name: "Full Body Cardio Blast", duration: 30, calories: 250, exercises: [{ name: "5 min warm-up jog", gif: "https://i.imgur.com/yVdQmmH.gif" }, { name: "45 sec high knees (3 sets)", gif: "https://i.imgur.com/sUTbA2u.gif" }, { name: "30 sec burpees (2 sets)", gif: "https://i.imgur.com/GfJId0l.gif" }, { name: "5 min cool-down stretch", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 6, name: "Core & Flexibility", duration: 20, calories: 120, exercises: [{ name: "5 min warm-up mobility", gif: "https://i.imgur.com/sUTbA2u.gif" }, { name: "30 sec plank (3 sets)", gif: "https://i.imgur.com/kL5jMvT.gif" }, { name: "15 crunches (3 sets)", gif: "https://i.imgur.com/tNxxE3A.gif" }, { name: "5 min cool-down stretch", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 7, name: "Rest Day", duration: 0, calories: 0, exercises: [{ name: "Enjoy your rest!", gif: "https://i.imgur.com/5dg9s2h.gif" }] },
-            // Week 2
-            { day: 8, name: "HIIT Cardio", duration: 30, calories: 280, exercises: [{ name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" }, { name: "40 sec high knees (4 sets)", gif: "https://i.imgur.com/sUTbA2u.gif" }, { name: "40 sec jump squats (3 sets)", gif: "https://i.imgur.com/tNxxE3A.gif" }, { name: "5 min cool-down", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 9, name: "Upper Body Strength", duration: 30, calories: 240, exercises: [{ name: "5 min dynamic warm-up", gif: "https://i.imgur.com/sUTbA2u.gif" }, { name: "12 push-ups (3 sets)", gif: "https://i.imgur.com/ACpA22r.gif" }, { name: "15 tricep dips (3 sets)", gif: "https://i.imgur.com/QJ2j3yv.gif" }, { name: "5 min cool-down stretch", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 10, name: "Lower Body & Glutes", duration: 30, calories: 230, exercises: [{ name: "5 min warm-up jog", gif: "https://i.imgur.com/yVdQmmH.gif" }, { name: "15 reverse lunges (3 sets)", gif: "https://i.imgur.com/QJ2j3yv.gif" }, { name: "20 glute kickbacks (2 sets)", gif: "https://i.imgur.com/5dg9s2h.gif" }, { name: "5 min cool-down stretch", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 11, name: "Active Recovery & Mobility", duration: 20, calories: 90, exercises: [{ name: "10 min gentle yoga flow", gif: "https://i.imgur.com/c383x5V.gif" }, { name: "10 min dynamic stretches", gif: "https://i.imgur.com/sUTbA2u.gif" }] },
-            { day: 12, name: "Full Body Circuit", duration: 35, calories: 300, exercises: [{ name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" }, { name: "Circuit (3 rounds): 15 squats, 10 push-ups, 20 mountain climbers", gif: "https://i.imgur.com/GfJId0l.gif" }, { name: "5 min cool-down", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 13, name: "Endurance Walk/Jog", duration: 40, calories: 220, exercises: [{ name: "40 min brisk walk or light jog", gif: "https://i.imgur.com/yVdQmmH.gif" }] },
-            { day: 14, name: "Rest Day", duration: 0, calories: 0, exercises: [{ name: "Enjoy your rest!", gif: "https://i.imgur.com/5dg9s2h.gif" }] },
-            // Week 3
-            { day: 15, name: "Tabata Cardio", duration: 25, calories: 320, exercises: [{ name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" }, { name: "Tabata: Burpees, Mountain Climbers, Jump Squats (2 rounds)", gif: "https://i.imgur.com/GfJId0l.gif" }, { name: "5 min cool-down", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 16, name: "Upper Body & Core", duration: 35, calories: 280, exercises: [{ name: "5 min dynamic warm-up", gif: "https://i.imgur.com/sUTbA2u.gif" }, { name: "12 decline push-ups (3 sets)", gif: "https://i.imgur.com/ACpA22r.gif" }, { name: "12 renegade rows (2 sets)", gif: "https://i.imgur.com/kL5jMvT.gif" }, { name: "5 min cool-down stretch", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 17, name: "Lower Body Power", duration: 30, calories: 260, exercises: [{ name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" }, { name: "12 jump squats (3 sets)", gif: "https://i.imgur.com/tNxxE3A.gif" }, { name: "10 plyometric lunges (2 sets)", gif: "https://i.imgur.com/QJ2j3yv.gif" }, { name: "5 min cool-down stretch", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 18, name: "Active Recovery", duration: 20, calories: 100, exercises: [{ name: "10 min light cycling or elliptical", gif: "https://i.imgur.com/yVdQmmH.gif" }, { name: "10 min foam rolling", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 19, name: "Full Body Strength", duration: 40, calories: 350, exercises: [{ name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" }, { name: "15 sumo squats (3 sets)", gif: "https://i.imgur.com/tNxxE3A.gif" }, { name: "10 pike push-ups (3 sets)", gif: "https://i.imgur.com/ACpA22r.gif" }, { name: "20 bicycle crunches (3 sets)", gif: "https://i.imgur.com/kL5jMvT.gif" }, { name: "5 min cool-down", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 20, name: "Long Steady Cardio", duration: 45, calories: 300, exercises: [{ name: "45 min steady-state cardio (jog, cycle, etc.)", gif: "https://i.imgur.com/yVdQmmH.gif" }] },
-            { day: 21, name: "Rest Day", duration: 0, calories: 0, exercises: [{ name: "Enjoy your rest!", gif: "https://i.imgur.com/5dg9s2h.gif" }] },
-            // Week 4
-            { day: 22, name: "Advanced HIIT", duration: 30, calories: 380, exercises: [{ name: "5 min dynamic warm-up", gif: "https://i.imgur.com/sUTbA2u.gif" }, { name: "45 sec burpees (4 sets)", gif: "https://i.imgur.com/GfJId0l.gif" }, { name: "45 sec push-up jacks (4 sets)", gif: "https://i.imgur.com/ACpA22r.gif" }, { name: "5 min cool-down stretch", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 23, name: "Full Body Max", duration: 45, calories: 420, exercises: [{ name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" }, { name: "10 weighted squats (3 sets)", gif: "https://i.imgur.com/tNxxE3A.gif" }, { name: "15 walking lunges (2 sets)", gif: "https://i.imgur.com/QJ2j3yv.gif" }, { name: "20 Russian twists (3 sets)", gif: "https://i.imgur.com/kL5jMvT.gif" }, { name: "5 min cool-down", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 24, name: "Active Recovery & Stretch", duration: 25, calories: 120, exercises: [{ name: "10 min gentle walk", gif: "https://i.imgur.com/yVdQmmH.gif" }, { name: "15 min full body static stretching", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 25, name: "Explosive Cardio & Core", duration: 35, calories: 390, exercises: [{ name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" }, { name: "40 sec squat thrusts (4 sets)", gif: "https://i.imgur.com/GfJId0l.gif" }, { name: "40 sec bicycle crunches (4 sets)", gif: "https://i.imgur.com/kL5jMvT.gif" }, { name: "5 min cool-down", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 26, name: "Upper Body Sculpt", duration: 40, calories: 360, exercises: [{ name: "5 min dynamic warm-up", gif: "https://i.imgur.com/sUTbA2u.gif" }, { name: "10 pike push-ups (3 sets)", gif: "https://i.imgur.com/ACpA22r.gif" }, { name: "12 chair dips (3 sets)", gif: "https://i.imgur.com/QJ2j3yv.gif" }, { name: "5 min cool-down stretch", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 27, name: "Lower Body Sculpt", duration: 40, calories: 370, exercises: [{ name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" }, { name: "15 curtsy lunges (3 sets)", gif: "https://i.imgur.com/QJ2j3yv.gif" }, { name: "20 clam shells (3 sets)", gif: "https://i.imgur.com/5dg9s2h.gif" }, { name: "5 min cool-down stretch", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 28, name: "Full Body Finisher", duration: 45, calories: 450, exercises: [{ name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" }, { name: "Circuit (4 rounds): 1 min jumping jacks, 1 min high knees, 1 min burpees", gif: "https://i.imgur.com/GfJId0l.gif" }, { name: "5 min cool-down", gif: "https://i.imgur.com/c383x5V.gif" }] },
-            { day: 29, name: "Active Recovery", duration: 20, calories: 110, exercises: [{ name: "20 min gentle walking or stretching", gif: "https://i.imgur.com/yVdQmmH.gif" }] },
-            { day: 30, name: "Challenge & Celebration", duration: 30, calories: 250, exercises: [{ name: "Repeat your favorite workout from the past 30 days!", gif: "https://i.imgur.com/GfJId0l.gif" }, { name: "Reflect on your progress and celebrate!", gif: "https://i.imgur.com/5dg9s2h.gif" }] },
+          // Week 1
+          {
+            day: 1,
+            name: "Beginner Cardio & Core",
+            duration: 20,
+            calories: 150,
+            exercises: [
+              {
+                name: "5 min warm-up walk",
+                gif: "https://i.pinimg.com/originals/b3/8d/a2/b38da20664cbd52a10f93c349a8542b2.gif",
+              },
+              {
+                name: "30 sec jumping jacks (3 sets)",
+                gif: "https://i.pinimg.com/originals/f3/0f/e9/f30fe940704b9f5e35ce56d4c2030c44.gif",
+              },
+              {
+                name: "15 squats (3 sets)",
+                gif: "https://media.tenor.com/hiusknnY54UAAAAM/lateral-squat-stretching.gif",
+              },
+              {
+                name: "10 lunges per leg (2 sets)",
+                gif: "https://i.pinimg.com/originals/50/2e/4e/502e4e797b053a650c9a1044ddb09925.gif",
+              },
+              {
+                name: "5 min cool-down stretch",
+                gif: "https://s3assets.skimble.com/assets/2609748/image_iphone.jpg",
+              },
+            ],
+          },
+          {
+            day: 2,
+            name: "Total Body Strength",
+            duration: 25,
+            calories: 210,
+            exercises: [
+              {
+                name: "5 min dynamic warm-up",
+                gif: "https://cdn.shopify.com/s/files/1/0645/8762/8770/files/overhead_reach_c8d0d367-a8ad-466a-b8af-356a380f0685_480x480.gif?v=1712296465",
+              },
+              {
+                name: "10 push-ups (3 sets)",
+                gif: "https://spotebi.com/wp-content/uploads/2014/10/push-up-exercise-illustration.gif",
+              },
+              {
+                name: "12 plank shoulder taps (2 sets)",
+                gif: "https://i.pinimg.com/originals/98/3a/ae/983aaeb3bd5dac317af8299eeb3a2707.gif",
+              },
+              {
+                name: "15 glute bridges (3 sets)",
+                gif: "https://spotebi.com/wp-content/uploads/2015/01/glute-bridge-exercise-illustration-spotebi.gif",
+              },
+              {
+                name: "5 min cool-down stretch",
+                gif: "https://spotebi.com/wp-content/uploads/2014/11/biceps-stretch-exercise-illustration.gif",
+              },
+            ],
+          },
+          {
+            day: 3,
+            name: "Active Recovery",
+            duration: 15,
+            calories: 80,
+            exercises: [
+              {
+                name: "15 min gentle walk & stretch",
+                gif: "https://i.imgur.com/yVdQmmH.gif",
+              },
+            ],
+          },
+          {
+            day: 4,
+            name: "Lower Body Focus",
+            duration: 25,
+            calories: 180,
+            exercises: [
+              {
+                name: "5 min warm-up walk",
+                gif: "https://i.imgur.com/yVdQmmH.gif",
+              },
+              {
+                name: "12 squats (3 sets)",
+                gif: "https://i.imgur.com/tNxxE3A.gif",
+              },
+              {
+                name: "10 lunges per leg (3 sets)",
+                gif: "https://i.imgur.com/QJ2j3yv.gif",
+              },
+              {
+                name: "15 calf raises (2 sets)",
+                gif: "https://i.imgur.com/s6a2s5k.gif",
+              },
+              {
+                name: "5 min cool-down stretch",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 5,
+            name: "Full Body Cardio Blast",
+            duration: 30,
+            calories: 250,
+            exercises: [
+              {
+                name: "5 min warm-up jog",
+                gif: "https://i.imgur.com/yVdQmmH.gif",
+              },
+              {
+                name: "45 sec high knees (3 sets)",
+                gif: "https://i.imgur.com/sUTbA2u.gif",
+              },
+              {
+                name: "30 sec burpees (2 sets)",
+                gif: "https://i.imgur.com/GfJId0l.gif",
+              },
+              {
+                name: "5 min cool-down stretch",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 6,
+            name: "Core & Flexibility",
+            duration: 20,
+            calories: 120,
+            exercises: [
+              {
+                name: "5 min warm-up mobility",
+                gif: '<iframe src="https://www.youtube.com/embed/j6C-6F6dr-4?si=p5sXYjIOI_TMoGib" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="width:100%; height:100%;"></iframe>',
+              },
+              {
+                name: "30 sec plank (3 sets)",
+                gif: '<iframe src="https://www.youtube.com/embed/pvIjsG5Svck?si=oZWCtq_YH6fP16Mk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="width:100%; height:100%;"></iframe>',
+              },
+              {
+                name: "15 crunches (3 sets)",
+                gif: '<iframe src="https://www.youtube.com/embed/0t4t3IpiEao?si=p6BLQD3y2KiuBELS&amp;start=23"  title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="width:100%; height:100%;"></iframe>',
+              },
+              {
+                name: "5 min cool-down stretch",
+                 gif: '<iframe src="https://www.youtube.com/embed/kI9mXjMQWzA?si=DrOjJUggpnLSUjrS" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="width:100%; height:100%;"></iframe>',
+              },
+            ],
+          },
+          {
+            day: 7,
+            name: "Rest Day",
+            duration: 0,
+            calories: 0,
+            exercises: [
+              {
+                name: "Enjoy your rest!",
+                gif: "https://i.imgur.com/5dg9s2h.gif",
+              },
+            ],
+          },
+          // Week 2
+          {
+            day: 8,
+            name: "HIIT Cardio",
+            duration: 30,
+            calories: 280,
+            exercises: [
+              { name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" },
+              {
+                name: "40 sec high knees (4 sets)",
+                gif: "https://i.imgur.com/sUTbA2u.gif",
+              },
+              {
+                name: "40 sec jump squats (3 sets)",
+                gif: "https://i.imgur.com/tNxxE3A.gif",
+              },
+              {
+                name: "5 min cool-down",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 9,
+            name: "Upper Body Strength",
+            duration: 30,
+            calories: 240,
+            exercises: [
+              {
+                name: "5 min dynamic warm-up",
+                gif: "https://i.imgur.com/sUTbA2u.gif",
+              },
+              {
+                name: "12 push-ups (3 sets)",
+                gif: "https://i.imgur.com/ACpA22r.gif",
+              },
+              {
+                name: "15 tricep dips (3 sets)",
+                gif: "https://i.imgur.com/QJ2j3yv.gif",
+              },
+              {
+                name: "5 min cool-down stretch",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 10,
+            name: "Lower Body & Glutes",
+            duration: 30,
+            calories: 230,
+            exercises: [
+              {
+                name: "5 min warm-up jog",
+                gif: "https://i.imgur.com/yVdQmmH.gif",
+              },
+              {
+                name: "15 reverse lunges (3 sets)",
+                gif: "https://i.imgur.com/QJ2j3yv.gif",
+              },
+              {
+                name: "20 glute kickbacks (2 sets)",
+                gif: "https://i.imgur.com/5dg9s2h.gif",
+              },
+              {
+                name: "5 min cool-down stretch",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 11,
+            name: "Active Recovery & Mobility",
+            duration: 20,
+            calories: 90,
+            exercises: [
+              {
+                name: "10 min gentle yoga flow",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+              {
+                name: "10 min dynamic stretches",
+                gif: "https://i.imgur.com/sUTbA2u.gif",
+              },
+            ],
+          },
+          {
+            day: 12,
+            name: "Full Body Circuit",
+            duration: 35,
+            calories: 300,
+            exercises: [
+              { name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" },
+              {
+                name: "Circuit (3 rounds): 15 squats, 10 push-ups, 20 mountain climbers",
+                gif: "https://i.imgur.com/GfJId0l.gif",
+              },
+              {
+                name: "5 min cool-down",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 13,
+            name: "Endurance Walk/Jog",
+            duration: 40,
+            calories: 220,
+            exercises: [
+              {
+                name: "40 min brisk walk or light jog",
+                gif: "https://i.imgur.com/yVdQmmH.gif",
+              },
+            ],
+          },
+          {
+            day: 14,
+            name: "Rest Day",
+            duration: 0,
+            calories: 0,
+            exercises: [
+              {
+                name: "Enjoy your rest!",
+                gif: "https://i.imgur.com/5dg9s2h.gif",
+              },
+            ],
+          },
+          // Week 3
+          {
+            day: 15,
+            name: "Tabata Cardio",
+            duration: 25,
+            calories: 320,
+            exercises: [
+              { name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" },
+              {
+                name: "Tabata: Burpees, Mountain Climbers, Jump Squats (2 rounds)",
+                gif: "https://i.imgur.com/GfJId0l.gif",
+              },
+              {
+                name: "5 min cool-down",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 16,
+            name: "Upper Body & Core",
+            duration: 35,
+            calories: 280,
+            exercises: [
+              {
+                name: "5 min dynamic warm-up",
+                gif: "https://i.imgur.com/sUTbA2u.gif",
+              },
+              {
+                name: "12 decline push-ups (3 sets)",
+                gif: "https://i.imgur.com/ACpA22r.gif",
+              },
+              {
+                name: "12 renegade rows (2 sets)",
+                gif: "https://i.imgur.com/kL5jMvT.gif",
+              },
+              {
+                name: "5 min cool-down stretch",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 17,
+            name: "Lower Body Power",
+            duration: 30,
+            calories: 260,
+            exercises: [
+              { name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" },
+              {
+                name: "12 jump squats (3 sets)",
+                gif: "https://i.imgur.com/tNxxE3A.gif",
+              },
+              {
+                name: "10 plyometric lunges (2 sets)",
+                gif: "https://i.imgur.com/QJ2j3yv.gif",
+              },
+              {
+                name: "5 min cool-down stretch",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 18,
+            name: "Active Recovery",
+            duration: 20,
+            calories: 100,
+            exercises: [
+              {
+                name: "10 min light cycling or elliptical",
+                gif: "https://i.imgur.com/yVdQmmH.gif",
+              },
+              {
+                name: "10 min foam rolling",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 19,
+            name: "Full Body Strength",
+            duration: 40,
+            calories: 350,
+            exercises: [
+              { name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" },
+              {
+                name: "15 sumo squats (3 sets)",
+                gif: "https://i.imgur.com/tNxxE3A.gif",
+              },
+              {
+                name: "10 pike push-ups (3 sets)",
+                gif: "https://i.imgur.com/ACpA22r.gif",
+              },
+              {
+                name: "20 bicycle crunches (3 sets)",
+                gif: "https://i.imgur.com/kL5jMvT.gif",
+              },
+              {
+                name: "5 min cool-down",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 20,
+            name: "Long Steady Cardio",
+            duration: 45,
+            calories: 300,
+            exercises: [
+              {
+                name: "45 min steady-state cardio (jog, cycle, etc.)",
+                gif: "https://i.imgur.com/yVdQmmH.gif",
+              },
+            ],
+          },
+          {
+            day: 21,
+            name: "Rest Day",
+            duration: 0,
+            calories: 0,
+            exercises: [
+              {
+                name: "Enjoy your rest!",
+                gif: "https://i.imgur.com/5dg9s2h.gif",
+              },
+            ],
+          },
+          // Week 4
+          {
+            day: 22,
+            name: "Advanced HIIT",
+            duration: 30,
+            calories: 380,
+            exercises: [
+              {
+                name: "5 min dynamic warm-up",
+                gif: "https://i.imgur.com/sUTbA2u.gif",
+              },
+              {
+                name: "45 sec burpees (4 sets)",
+                gif: "https://i.imgur.com/GfJId0l.gif",
+              },
+              {
+                name: "45 sec push-up jacks (4 sets)",
+                gif: "https://i.imgur.com/ACpA22r.gif",
+              },
+              {
+                name: "5 min cool-down stretch",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 23,
+            name: "Full Body Max",
+            duration: 45,
+            calories: 420,
+            exercises: [
+              { name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" },
+              {
+                name: "10 weighted squats (3 sets)",
+                gif: "https://i.imgur.com/tNxxE3A.gif",
+              },
+              {
+                name: "15 walking lunges (2 sets)",
+                gif: "https://i.imgur.com/QJ2j3yv.gif",
+              },
+              {
+                name: "20 Russian twists (3 sets)",
+                gif: "https://i.imgur.com/kL5jMvT.gif",
+              },
+              {
+                name: "5 min cool-down",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 24,
+            name: "Active Recovery & Stretch",
+            duration: 25,
+            calories: 120,
+            exercises: [
+              {
+                name: "10 min gentle walk",
+                gif: "https://i.imgur.com/yVdQmmH.gif",
+              },
+              {
+                name: "15 min full body static stretching",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 25,
+            name: "Explosive Cardio & Core",
+            duration: 35,
+            calories: 390,
+            exercises: [
+              { name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" },
+              {
+                name: "40 sec squat thrusts (4 sets)",
+                gif: "https://i.imgur.com/GfJId0l.gif",
+              },
+              {
+                name: "40 sec bicycle crunches (4 sets)",
+                gif: "https://i.imgur.com/kL5jMvT.gif",
+              },
+              {
+                name: "5 min cool-down",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 26,
+            name: "Upper Body Sculpt",
+            duration: 40,
+            calories: 360,
+            exercises: [
+              {
+                name: "5 min dynamic warm-up",
+                gif: "https://i.imgur.com/sUTbA2u.gif",
+              },
+              {
+                name: "10 pike push-ups (3 sets)",
+                gif: "https://i.imgur.com/ACpA22r.gif",
+              },
+              {
+                name: "12 chair dips (3 sets)",
+                gif: "https://i.imgur.com/QJ2j3yv.gif",
+              },
+              {
+                name: "5 min cool-down stretch",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 27,
+            name: "Lower Body Sculpt",
+            duration: 40,
+            calories: 370,
+            exercises: [
+              { name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" },
+              {
+                name: "15 curtsy lunges (3 sets)",
+                gif: "https://i.imgur.com/QJ2j3yv.gif",
+              },
+              {
+                name: "20 clam shells (3 sets)",
+                gif: "https://i.imgur.com/5dg9s2h.gif",
+              },
+              {
+                name: "5 min cool-down stretch",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 28,
+            name: "Full Body Finisher",
+            duration: 45,
+            calories: 450,
+            exercises: [
+              { name: "5 min warm-up", gif: "https://i.imgur.com/yVdQmmH.gif" },
+              {
+                name: "Circuit (4 rounds): 1 min jumping jacks, 1 min high knees, 1 min burpees",
+                gif: "https://i.imgur.com/GfJId0l.gif",
+              },
+              {
+                name: "5 min cool-down",
+                gif: "https://i.imgur.com/c383x5V.gif",
+              },
+            ],
+          },
+          {
+            day: 29,
+            name: "Active Recovery",
+            duration: 20,
+            calories: 110,
+            exercises: [
+              {
+                name: "20 min gentle walking or stretching",
+                gif: "https://i.imgur.com/yVdQmmH.gif",
+              },
+            ],
+          },
+          {
+            day: 30,
+            name: "Challenge & Celebration",
+            duration: 30,
+            calories: 250,
+            exercises: [
+              {
+                name: "Repeat your favorite workout from the past 30 days!",
+                gif: "https://i.imgur.com/GfJId0l.gif",
+              },
+              {
+                name: "Reflect on your progress and celebrate!",
+                gif: "https://i.imgur.com/5dg9s2h.gif",
+              },
+            ],
+          },
         ];
 
         // Simple database of food items and their calories per serving/100g
         const foodDatabase = {
-            'apple': 95, 'banana': 105, 'orange': 62, 'grapes': 69, 'strawberry': 4, 'egg': 78,
-            'chicken breast': 165, 'salmon': 206, 'tuna': 184, 'beef': 250, 'pork': 242,
-            'rice': 130, 'pasta': 131, 'bread': 265, 'potato': 77, 'sweet potato': 86,
-            'broccoli': 55, 'spinach': 23, 'carrot': 41, 'tomato': 18, 'cucumber': 16,
-            'almonds': 579, 'walnuts': 654, 'peanuts': 567, 'cheese': 402, 'milk': 42, 'yogurt': 59,
-            'pizza': 285, 'burger': 295, 'fries': 312, 'ice cream': 207, 'chocolate': 546,
-            'dosa': 168, 'kozhi roti': 447, 'chicken roti': 447, 'horse gram curry': 320,
+          apple: 95,
+          banana: 105,
+          orange: 62,
+          grapes: 69,
+          strawberry: 4,
+          egg: 78,
+          "chicken breast": 165,
+          salmon: 206,
+          tuna: 184,
+          beef: 250,
+          pork: 242,
+          rice: 130,
+          pasta: 131,
+          bread: 265,
+          potato: 77,
+          "sweet potato": 86,
+          broccoli: 55,
+          spinach: 23,
+          carrot: 41,
+          tomato: 18,
+          cucumber: 16,
+          almonds: 579,
+          walnuts: 654,
+          peanuts: 567,
+          cheese: 402,
+          milk: 42,
+          yogurt: 59,
+          pizza: 285,
+          burger: 295,
+          fries: 312,
+          "ice cream": 207,
+          chocolate: 546,
+          dosa: 168,
+          "kozhi roti": 447,
+          "chicken roti": 447,
+          "horse gram curry": 320,
         };
-        
+
         // --- STATE MANAGEMENT ---
-        let completedWorkouts = JSON.parse(localStorage.getItem('completedWorkouts_v4')) || [];
-        let totalCaloriesBurned = parseFloat(localStorage.getItem('totalCaloriesBurned_v4')) || 0;
-        let totalExerciseMinutes = parseFloat(localStorage.getItem('totalExerciseMinutes_v4')) || 0;
-        let initialWeight = parseFloat(localStorage.getItem('initialWeight_v4')) || null;
-        let currentWeight = parseFloat(localStorage.getItem('currentWeight_v4')) || null;
-        let foodLog = JSON.parse(localStorage.getItem('foodLog_v4')) || [];
-        
+        let completedWorkouts =
+          JSON.parse(localStorage.getItem("completedWorkouts_v4")) || [];
+        let totalCaloriesBurned =
+          parseFloat(localStorage.getItem("totalCaloriesBurned_v4")) || 0;
+        let totalExerciseMinutes =
+          parseFloat(localStorage.getItem("totalExerciseMinutes_v4")) || 0;
+        let initialWeight =
+          parseFloat(localStorage.getItem("initialWeight_v4")) || null;
+        let currentWeight =
+          parseFloat(localStorage.getItem("currentWeight_v4")) || null;
+        let foodLog = JSON.parse(localStorage.getItem("foodLog_v4")) || [];
+
         let mediaRecorder;
         let recordedChunks = [];
         let timerInterval;
         let currentDayForModal;
 
         // --- DOM ELEMENTS ---
-        const workoutContainer = document.getElementById('workout-container');
-        const foodLogList = document.getElementById('food-log-list');
-        const modal = document.getElementById('workout-complete-modal');
-        const recordingPreview = document.getElementById('recording-preview');
+        const workoutContainer = document.getElementById("workout-container");
+        const foodLogList = document.getElementById("food-log-list");
+        const modal = document.getElementById("workout-complete-modal");
+        const recordingPreview = document.getElementById("recording-preview");
 
         // --- YouTube Music Search & Player DOM Elements ---
-        const musicSearchInput = document.getElementById('music-search-input');
-        const musicSearchBtn = document.getElementById('music-search-btn');
-        const youtubePlayerContainer = document.getElementById('youtube-player-container'); // Corrected to target the container
-        const youtubeResultsContainer = document.getElementById('youtube-results-container'); 
-        const youtubeVideoList = document.getElementById('youtube-video-list');           
-        
+        const musicSearchInput = document.getElementById("music-search-input");
+        const musicSearchBtn = document.getElementById("music-search-btn");
+        const youtubePlayerContainer = document.getElementById(
+          "youtube-player-container"
+        ); // Corrected to target the container
+        const youtubeResultsContainer = document.getElementById(
+          "youtube-results-container"
+        );
+        const youtubeVideoList = document.getElementById("youtube-video-list");
+
         // Custom Player Controls
-        const customMusicPlayer = document.getElementById('custom-music-player');
-        const nowPlayingTitle = document.getElementById('now-playing-title');
-        const playPauseBtn = document.getElementById('play-pause-btn');
-        const playPauseIcon = document.getElementById('play-pause-icon');
-        const progressBar = document.getElementById('progress-bar'); // Music player's progress bar
-        const currentTimeDisplay = document.getElementById('current-time');
-        const durationTimeDisplay = document.getElementById('duration-time');
-        const musicPlayerMessage = document.getElementById('music-player-message'); // New element for messages
-        
+        const customMusicPlayer = document.getElementById(
+          "custom-music-player"
+        );
+        const nowPlayingTitle = document.getElementById("now-playing-title");
+        const playPauseBtn = document.getElementById("play-pause-btn");
+        const playPauseIcon = document.getElementById("play-pause-icon");
+        const progressBar = document.getElementById("progress-bar"); // Music player's progress bar
+        const currentTimeDisplay = document.getElementById("current-time");
+        const durationTimeDisplay = document.getElementById("duration-time");
+        const musicPlayerMessage = document.getElementById(
+          "music-player-message"
+        ); // New element for messages
+
         // --- FUNCTIONS ---
 
         const saveProgress = () => {
-            localStorage.setItem('completedWorkouts_v4', JSON.stringify(completedWorkouts));
-            localStorage.setItem('totalCaloriesBurned_v4', totalCaloriesBurned);
-            localStorage.setItem('totalExerciseMinutes_v4', totalExerciseMinutes);
-            localStorage.setItem('initialWeight_v4', initialWeight);
-            localStorage.setItem('currentWeight_v4', currentWeight);
-            localStorage.setItem('foodLog_v4', JSON.stringify(foodLog));
+          localStorage.setItem(
+            "completedWorkouts_v4",
+            JSON.stringify(completedWorkouts)
+          );
+          localStorage.setItem("totalCaloriesBurned_v4", totalCaloriesBurned);
+          localStorage.setItem("totalExerciseMinutes_v4", totalExerciseMinutes);
+          localStorage.setItem("initialWeight_v4", initialWeight);
+          localStorage.setItem("currentWeight_v4", currentWeight);
+          localStorage.setItem("foodLog_v4", JSON.stringify(foodLog));
         };
-        
+
         const updateProgressDashboard = () => {
-            const daysCompleted = completedWorkouts.length;
-            const progressPercentage = (daysCompleted / 30) * 100;
-            
-            document.getElementById('days-completed').textContent = daysCompleted;
-            // Targeting the correct progress bar for the overall workout plan
-            document.getElementById('overall-progress-bar').style.width = `${progressPercentage}%`; 
-            document.getElementById('total-calories-burned').textContent = Math.round(totalCaloriesBurned);
-            document.getElementById('total-exercise-minutes').textContent = Math.round(totalExerciseMinutes);
-            
-            document.getElementById('current-weight').value = currentWeight || '';
-            const weightChangeInfo = document.getElementById('weight-change-info');
-            if (initialWeight && currentWeight) {
-                const change = currentWeight - initialWeight;
-                weightChangeInfo.textContent = `Initial: ${initialWeight} kg. Change: ${change.toFixed(1)} kg.`;
-            } else if (currentWeight) {
-                 weightChangeInfo.textContent = 'Set your initial weight to track changes.';
-                 if(!initialWeight) initialWeight = currentWeight;
-            } else {
-                 weightChangeInfo.textContent = 'Enter your current weight to begin tracking.';
-            }
+          const daysCompleted = completedWorkouts.length;
+          const progressPercentage = (daysCompleted / 30) * 100;
+
+          document.getElementById("days-completed").textContent = daysCompleted;
+          // Targeting the correct progress bar for the overall workout plan
+          document.getElementById(
+            "overall-progress-bar"
+          ).style.width = `${progressPercentage}%`;
+          document.getElementById("total-calories-burned").textContent =
+            Math.round(totalCaloriesBurned);
+          document.getElementById("total-exercise-minutes").textContent =
+            Math.round(totalExerciseMinutes);
+
+          document.getElementById("current-weight").value = currentWeight || "";
+          const weightChangeInfo =
+            document.getElementById("weight-change-info");
+          if (initialWeight && currentWeight) {
+            const change = currentWeight - initialWeight;
+            weightChangeInfo.textContent = `Initial: ${initialWeight} kg. Change: ${change.toFixed(
+              1
+            )} kg.`;
+          } else if (currentWeight) {
+            weightChangeInfo.textContent =
+              "Set your initial weight to track changes.";
+            if (!initialWeight) initialWeight = currentWeight;
+          } else {
+            weightChangeInfo.textContent =
+              "Enter your current weight to begin tracking.";
+          }
         };
 
         const updateFoodLogUI = () => {
-            foodLogList.innerHTML = '';
-            let totalCalories = 0;
+          foodLogList.innerHTML = "";
+          let totalCalories = 0;
 
-            foodLog.forEach((item, index) => {
-                const li = document.createElement('li');
-                li.className = 'py-3 flex justify-between items-center';
-                li.innerHTML = `
+          foodLog.forEach((item, index) => {
+            const li = document.createElement("li");
+            li.className = "py-3 flex justify-between items-center";
+            li.innerHTML = `
                     <div>
                         <span class="text-gray-800 capitalize">${item.name}</span>
                         <span class="text-sm text-gray-500 ml-2">(Qty: ${item.quantity})</span>
@@ -704,541 +1572,691 @@
                         </button>
                     </div>
                 `;
-                foodLogList.appendChild(li);
-                totalCalories += item.calories;
-            });
+            foodLogList.appendChild(li);
+            totalCalories += item.calories;
+          });
 
-            document.getElementById('total-calories-log').textContent = `${totalCalories} calories`;
+          document.getElementById(
+            "total-calories-log"
+          ).textContent = `${totalCalories} calories`;
         };
-        
+
         const generateWorkoutPlan = () => {
-            workoutContainer.innerHTML = '';
-            const lastCompletedDay = completedWorkouts.length > 0 ? Math.max(...completedWorkouts.map(w => w.day)) : 0;
-            
-            workoutPlan.forEach(workout => {
-                const isCompleted = completedWorkouts.some(cw => cw.day === workout.day);
-                // A day is locked if it's more than 1 day after the last completed day, and not already completed
-                const isLocked = workout.day > lastCompletedDay + 1 && !isCompleted; 
+          workoutContainer.innerHTML = "";
+          const lastCompletedDay =
+            completedWorkouts.length > 0
+              ? Math.max(...completedWorkouts.map((w) => w.day))
+              : 0;
 
-                const card = document.createElement('div');
-                card.className = `p-6 bg-gray-50 rounded-lg shadow-sm exercise-card ${isLocked ? 'locked' : ''}`;
-                card.dataset.day = workout.day;
+          workoutPlan.forEach((workout) => {
+            const isCompleted = completedWorkouts.some(
+              (cw) => cw.day === workout.day
+            );
+            // A day is locked if it's more than 1 day after the last completed day, and not already completed
+            const isLocked = workout.day > lastCompletedDay + 1 && !isCompleted;
 
-                let exercisesHtml = workout.exercises.map((ex, index) => `
+            const card = document.createElement("div");
+            card.className = `p-6 bg-gray-50 rounded-lg shadow-sm exercise-card ${
+              isLocked ? "locked" : ""
+            }`;
+            card.dataset.day = workout.day;
+
+            let exercisesHtml = workout.exercises
+              .map(
+                (ex, index) => `
                     <div class="mt-2">
                         <div class="flex justify-between items-center">
                             <span class="text-gray-700">${ex.name}</span>
-                            <button class="show-gif-btn text-pink-500 text-sm hover:underline" data-gif-container="gif-${workout.day}-${index}">Show</button>
+                            <button class="show-gif-btn text-pink-500 text-sm hover:underline" data-gif-container="gif-${
+                              workout.day
+                            }-${index}">Show</button>
                         </div>
-                        <div id="gif-${workout.day}-${index}" class="gif-container hidden">
-                            <img src="${ex.gif}" alt="${ex.name} GIF" loading="lazy">
+                        <div id="gif-${
+                          workout.day
+                        }-${index}" class="gif-container hidden">
+                            ${
+                              ex.gif.startsWith("<iframe")
+                                ? ex.gif
+                                : `<img src="${ex.gif}" alt="${ex.name} GIF" loading="lazy">`
+                            }
                         </div>
                     </div>
-                `).join('');
+                `
+              )
+              .join("");
 
-                card.innerHTML = `
+            card.innerHTML = `
                     <div class="flex items-center justify-between">
-                        <h4 class="text-lg font-medium text-gray-900">Day ${workout.day}: ${workout.name}</h4>
-                        ${isCompleted ? '<span class="text-green-500 font-bold">✔ Completed</span>' : ''}
-                        ${isLocked ? '<i class="fas fa-lock text-gray-400"></i>' : ''}
+                        <h4 class="text-lg font-medium text-gray-900">Day ${
+                          workout.day
+                        }: ${workout.name}</h4>
+                        ${
+                          isCompleted
+                            ? '<span class="text-green-500 font-bold">✔ Completed</span>'
+                            : ""
+                        }
+                        ${
+                          isLocked
+                            ? '<i class="fas fa-lock text-gray-400"></i>'
+                            : ""
+                        }
                     </div>
-                     <div class="text-sm text-gray-500">${workout.duration} min | ~${workout.calories} kcal</div>
+                     <div class="text-sm text-gray-500">${
+                       workout.duration
+                     } min | ~${workout.calories} kcal</div>
                      <div class="mt-4">${exercisesHtml}</div>
-                     <div id="timer-day-${workout.day}" class="my-4 text-center text-2xl font-bold text-pink-600"></div>
-                     <div class="mt-4 flex flex-col space-y-2" id="controls-day-${workout.day}">
-                         <button class="start-exercise-btn w-full py-2 px-4 rounded-md text-white bg-pink-600 hover:bg-pink-700 ${isCompleted || isLocked ? 'hidden' : ''}" data-day="${workout.day}">Start</button>
-                         <button class="complete-exercise-btn w-full py-2 px-4 rounded-md text-white bg-green-500 hover:bg-green-600 hidden" data-day="${workout.day}">Complete</button>
-                         <video id="video-preview-${workout.day}" class="video-preview hidden" controls></video>
-                         <a id="download-link-${workout.day}" class="hidden"></a>
+                     <div id="timer-day-${
+                       workout.day
+                     }" class="my-4 text-center text-2xl font-bold text-pink-600"></div>
+                     <div class="mt-4 flex flex-col space-y-2" id="controls-day-${
+                       workout.day
+                     }">
+                         <button class="start-exercise-btn w-full py-2 px-4 rounded-md text-white bg-pink-600 hover:bg-pink-700 ${
+                           isCompleted || isLocked ? "hidden" : ""
+                         }" data-day="${workout.day}">Start</button>
+                         <button class="complete-exercise-btn w-full py-2 px-4 rounded-md text-white bg-green-500 hover:bg-green-600 hidden" data-day="${
+                           workout.day
+                         }">Complete</button>
+                         <video id="video-preview-${
+                           workout.day
+                         }" class="video-preview hidden" controls></video>
+                         <a id="download-link-${
+                           workout.day
+                         }" class="hidden"></a>
                      </div>
                 `;
-                workoutContainer.appendChild(card);
-            });
+            workoutContainer.appendChild(card);
+          });
         };
 
         const startRecording = async (day) => {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                
-                // --- Start: Live Preview Logic ---
-                recordingPreview.srcObject = stream;
-                recordingPreview.classList.remove('hidden');
-                // --- End: Live Preview Logic ---
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: true,
+              audio: true,
+            });
 
-                mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
-                recordedChunks = [];
-                mediaRecorder.ondataavailable = e => e.data.size > 0 && recordedChunks.push(e.data);
-                
-                // This generic 'onstop' handler will clean up the preview and camera
-                mediaRecorder.onstop = () => {
-                    recordingPreview.classList.add('hidden');
-                    if (recordingPreview.srcObject) {
-                        recordingPreview.srcObject.getTracks().forEach(track => track.stop());
-                        recordingPreview.srcObject = null;
-                    }
-                };
-                
-                mediaRecorder.start();
-            } catch (err) {
-                console.error("Error accessing media devices.", err);
-                alert("Could not access your camera. Please check permissions and try again.");
-            }
+            // --- Start: Live Preview Logic ---
+            recordingPreview.srcObject = stream;
+            recordingPreview.classList.remove("hidden");
+            // --- End: Live Preview Logic ---
+
+            mediaRecorder = new MediaRecorder(stream, {
+              mimeType: "video/webm",
+            });
+            recordedChunks = [];
+            mediaRecorder.ondataavailable = (e) =>
+              e.data.size > 0 && recordedChunks.push(e.data);
+
+            // This generic 'onstop' handler will clean up the preview and camera
+            mediaRecorder.onstop = () => {
+              recordingPreview.classList.add("hidden");
+              if (recordingPreview.srcObject) {
+                recordingPreview.srcObject
+                  .getTracks()
+                  .forEach((track) => track.stop());
+                recordingPreview.srcObject = null;
+              }
+            };
+
+            mediaRecorder.start();
+          } catch (err) {
+            console.error("Error accessing media devices.", err);
+            alert(
+              "Could not access your camera. Please check permissions and try again."
+            );
+          }
         };
 
         const startTimer = (day) => {
-            const workout = workoutPlan.find(w => w.day === day);
-            if (!workout) return;
-            let secondsRemaining = workout.duration * 60;
-            const timerDisplay = document.getElementById(`timer-day-${day}`);
-            const caloriesPerSecond = workout.calories / (workout.duration * 60);
+          const workout = workoutPlan.find((w) => w.day === day);
+          if (!workout) return;
+          let secondsRemaining = workout.duration * 60;
+          const timerDisplay = document.getElementById(`timer-day-${day}`);
+          const caloriesPerSecond = workout.calories / (workout.duration * 60);
 
-            timerDisplay.textContent = `${(workout.duration).toString().padStart(2, '0')}:00`; // Initialize timer display
+          timerDisplay.textContent = `${workout.duration
+            .toString()
+            .padStart(2, "0")}:00`; // Initialize timer display
 
-            timerInterval = setInterval(() => {
-                secondsRemaining--;
-                totalExerciseMinutes += 1/60;
-                totalCaloriesBurned += caloriesPerSecond;
-                const minutes = Math.floor(secondsRemaining / 60);
-                const seconds = secondsRemaining % 60;
-                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                updateProgressDashboard();
-                if (secondsRemaining <= 0) {
-                    clearInterval(timerInterval);
-                    timerDisplay.textContent = "Time's up!";
-                    currentDayForModal = day;
-                    modal.classList.remove('hidden');
-                }
-            }, 1000);
+          timerInterval = setInterval(() => {
+            secondsRemaining--;
+            totalExerciseMinutes += 1 / 60;
+            totalCaloriesBurned += caloriesPerSecond;
+            const minutes = Math.floor(secondsRemaining / 60);
+            const seconds = secondsRemaining % 60;
+            timerDisplay.textContent = `${minutes
+              .toString()
+              .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+            updateProgressDashboard();
+            if (secondsRemaining <= 0) {
+              clearInterval(timerInterval);
+              timerDisplay.textContent = "Time's up!";
+              currentDayForModal = day;
+              modal.classList.remove("hidden");
+            }
+          }, 1000);
         };
 
         const completeWorkout = (day) => {
-             const workout = workoutPlan.find(w => w.day === day);
-                
-            if (mediaRecorder?.state === "recording") {
-                // Add a one-time listener to process the video when stop() is called.
-                mediaRecorder.addEventListener('stop', () => {
-                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
-                    const url = URL.createObjectURL(blob);
-                    const preview = document.getElementById(`video-preview-${day}`);
-                    preview.src = url;
-                    preview.classList.remove('hidden');
-                    const dlLink = document.getElementById(`download-link-${day}`);
-                    dlLink.href = url;
-                    dlLink.download = `workout_day_${day}.webm`;
-                    
-                    const controlsContainer = document.getElementById(`controls-day-${day}`);
-                    let saveBtn = controlsContainer.querySelector('.save-video-btn');
-                    if (!saveBtn) {
-                        saveBtn = document.createElement('button');
-                        saveBtn.textContent = 'Save Video';
-                        saveBtn.className = 'save-video-btn w-full mt-2 py-2 px-4 rounded-md text-white bg-blue-500 hover:bg-blue-600';
-                        saveBtn.onclick = () => dlLink.click();
-                        controlsContainer.appendChild(saveBtn);
-                    }
-                }, { once: true }); // Use { once: true } so it only fires for this completion event.
-                
-                mediaRecorder.stop();
-            }
-            clearInterval(timerInterval);
+          const workout = workoutPlan.find((w) => w.day === day);
 
-            if (!completedWorkouts.some(cw => cw.day === day)) {
-                completedWorkouts.push({
-                    day: day, name: workout.name, duration: workout.duration,
-                    calories: workout.calories, date: new Date().toLocaleDateString()
-                });
-                const nextDayIsRest = workoutPlan.find(w => w.day === day + 1 && w.name.toLowerCase().includes('rest'));
-                if(nextDayIsRest && !completedWorkouts.some(cw => cw.day === nextDayIsRest.day)) {
-                     completedWorkouts.push({ day: nextDayIsRest.day, name: nextDayIsRest.name, duration: 0, calories: 0, date: new Date().toLocaleDateString() });
+          if (mediaRecorder?.state === "recording") {
+            // Add a one-time listener to process the video when stop() is called.
+            mediaRecorder.addEventListener(
+              "stop",
+              () => {
+                const blob = new Blob(recordedChunks, { type: "video/webm" });
+                const url = URL.createObjectURL(blob);
+                const preview = document.getElementById(`video-preview-${day}`);
+                preview.src = url;
+                preview.classList.remove("hidden");
+                const dlLink = document.getElementById(`download-link-${day}`);
+                dlLink.href = url;
+                dlLink.download = `workout_day_${day}.webm`;
+
+                const controlsContainer = document.getElementById(
+                  `controls-day-${day}`
+                );
+                let saveBtn =
+                  controlsContainer.querySelector(".save-video-btn");
+                if (!saveBtn) {
+                  saveBtn = document.createElement("button");
+                  saveBtn.textContent = "Save Video";
+                  saveBtn.className =
+                    "save-video-btn w-full mt-2 py-2 px-4 rounded-md text-white bg-blue-500 hover:bg-blue-600";
+                  saveBtn.onclick = () => dlLink.click();
+                  controlsContainer.appendChild(saveBtn);
                 }
+              },
+              { once: true }
+            ); // Use { once: true } so it only fires for this completion event.
+
+            mediaRecorder.stop();
+          }
+          clearInterval(timerInterval);
+
+          if (!completedWorkouts.some((cw) => cw.day === day)) {
+            completedWorkouts.push({
+              day: day,
+              name: workout.name,
+              duration: workout.duration,
+              calories: workout.calories,
+              date: new Date().toLocaleDateString(),
+            });
+            const nextDayIsRest = workoutPlan.find(
+              (w) => w.day === day + 1 && w.name.toLowerCase().includes("rest")
+            );
+            if (
+              nextDayIsRest &&
+              !completedWorkouts.some((cw) => cw.day === nextDayIsRest.day)
+            ) {
+              completedWorkouts.push({
+                day: nextDayIsRest.day,
+                name: nextDayIsRest.name,
+                duration: 0,
+                calories: 0,
+                date: new Date().toLocaleDateString(),
+              });
             }
-            saveProgress();
-            generateWorkoutPlan();
-            updateProgressDashboard();
+          }
+          saveProgress();
+          generateWorkoutPlan();
+          updateProgressDashboard();
         };
-        
+
         // --- EVENT DELEGATION ---
-        
-        workoutContainer.addEventListener('click', (e) => {
-            if (e.target.matches('.show-gif-btn')) {
-                const btn = e.target;
-                const container = document.getElementById(btn.dataset.gifContainer);
-                container.classList.toggle('hidden');
-                btn.textContent = container.classList.contains('hidden') ? 'Show' : 'Hide';
-            } else if (e.target.matches('.start-exercise-btn')) {
-                const btn = e.target;
-                const day = parseInt(btn.dataset.day);
-                btn.classList.add('hidden');
-                document.querySelector(`.complete-exercise-btn[data-day="${day}"]`).classList.remove('hidden');
-                startRecording(day);
-                startTimer(day);
-            } else if (e.target.matches('.complete-exercise-btn')) {
-                const day = parseInt(e.target.dataset.day);
-                completeWorkout(day);
-            }
+
+        workoutContainer.addEventListener("click", (e) => {
+          if (e.target.matches(".show-gif-btn")) {
+            const btn = e.target;
+            const container = document.getElementById(btn.dataset.gifContainer);
+            container.classList.toggle("hidden");
+            btn.textContent = container.classList.contains("hidden")
+              ? "Show"
+              : "Hide";
+          } else if (e.target.matches(".start-exercise-btn")) {
+            const btn = e.target;
+            const day = parseInt(btn.dataset.day);
+            btn.classList.add("hidden");
+            document
+              .querySelector(`.complete-exercise-btn[data-day="${day}"]`)
+              .classList.remove("hidden");
+            startRecording(day);
+            startTimer(day);
+          } else if (e.target.matches(".complete-exercise-btn")) {
+            const day = parseInt(e.target.dataset.day);
+            completeWorkout(day);
+          }
         });
 
-        foodLogList.addEventListener('click', (e) => {
-            const removeBtn = e.target.closest('.remove-food-btn');
-            if (removeBtn) {
-                const index = parseInt(removeBtn.dataset.index);
-                foodLog.splice(index, 1);
-                saveProgress();
-                updateFoodLogUI();
-            }
+        foodLogList.addEventListener("click", (e) => {
+          const removeBtn = e.target.closest(".remove-food-btn");
+          if (removeBtn) {
+            const index = parseInt(removeBtn.dataset.index);
+            foodLog.splice(index, 1);
+            saveProgress();
+            updateFoodLogUI();
+          }
         });
-
 
         // --- OTHER EVENT LISTENERS ---
-        document.getElementById('add-food-btn').addEventListener('click', () => {
-            const searchInput = document.getElementById('food-search');
-            const quantityInput = document.getElementById('food-quantity');
+        document
+          .getElementById("add-food-btn")
+          .addEventListener("click", () => {
+            const searchInput = document.getElementById("food-search");
+            const quantityInput = document.getElementById("food-quantity");
             const foodName = searchInput.value.trim().toLowerCase();
             const quantity = parseInt(quantityInput.value) || 1;
-            const notFoundMsg = document.getElementById('food-not-found');
+            const notFoundMsg = document.getElementById("food-not-found");
 
             if (foodDatabase.hasOwnProperty(foodName) && quantity > 0) {
-                const singleCalorie = foodDatabase[foodName];
-                const totalCalories = singleCalorie * quantity;
-                foodLog.push({ name: foodName, calories: totalCalories, quantity: quantity });
-                saveProgress();
-                updateFoodLogUI();
-                searchInput.value = '';
-                quantityInput.value = '1';
-                notFoundMsg.classList.add('hidden');
-                searchInput.focus();
+              const singleCalorie = foodDatabase[foodName];
+              const totalCalories = singleCalorie * quantity;
+              foodLog.push({
+                name: foodName,
+                calories: totalCalories,
+                quantity: quantity,
+              });
+              saveProgress();
+              updateFoodLogUI();
+              searchInput.value = "";
+              quantityInput.value = "1";
+              notFoundMsg.classList.add("hidden");
+              searchInput.focus();
             } else {
-                notFoundMsg.classList.remove('hidden');
+              notFoundMsg.classList.remove("hidden");
             }
-        });
-        
-        document.getElementById('food-search').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('add-food-btn').click();
-            }
-        });
+          });
 
-        document.getElementById('food-quantity').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('add-food-btn').click();
+        document
+          .getElementById("food-search")
+          .addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              document.getElementById("add-food-btn").click();
             }
-        });
-        
-        document.getElementById('save-weight-btn').addEventListener('click', () => {
-            const weightInput = document.getElementById('current-weight');
+          });
+
+        document
+          .getElementById("food-quantity")
+          .addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              document.getElementById("add-food-btn").click();
+            }
+          });
+
+        document
+          .getElementById("save-weight-btn")
+          .addEventListener("click", () => {
+            const weightInput = document.getElementById("current-weight");
             const newWeight = parseFloat(weightInput.value);
             if (newWeight > 0) {
-                if(!initialWeight) initialWeight = newWeight;
-                currentWeight = newWeight;
-                saveProgress();
-                updateProgressDashboard();
-                weightInput.blur();
-                alert('Weight saved!');
+              if (!initialWeight) initialWeight = newWeight;
+              currentWeight = newWeight;
+              saveProgress();
+              updateProgressDashboard();
+              weightInput.blur();
+              alert("Weight saved!");
             } else {
-                alert('Please enter a valid weight.');
+              alert("Please enter a valid weight.");
             }
-        });
+          });
 
-        document.getElementById('email-report-btn').addEventListener('click', () => {
-             const subject = "My 30-Day Fitness Journey Report";
-             let body = "Hello My Love,\n\nHere is my workout report:\n\n";
-             body += `Total Days Completed: ${completedWorkouts.length}/30\n`;
-             body += `Total Calories Burned (Workouts): ${Math.round(totalCaloriesBurned)} kcal\n`;
-             let totalFoodCalories = foodLog.reduce((acc, item) => acc + item.calories, 0);
-             body += `Total Calories Consumed (Today): ${totalFoodCalories} kcal\n`;
-             body += `Total Exercise Minutes: ${Math.round(totalExerciseMinutes)} min\n`;
-             if (initialWeight && currentWeight) {
-                const change = currentWeight - initialWeight;
-                body += `Weight Change: ${change.toFixed(1)} kg (from ${initialWeight} kg to ${currentWeight} kg)\n\n`;
-             }
-             body += "Completed Workouts:\n";
-             completedWorkouts.forEach(w => { body += `- Day ${w.day}: ${w.name} on ${w.date}\n`; });
-             body += "\nToday's Food Log:\n";
-             foodLog.forEach(f => { body += `- ${f.name.charAt(0).toUpperCase() + f.name.slice(1)} (Qty: ${f.quantity}): ${f.calories} cal\n`; });
-             body += "\nBest,\n[Your Name]";
-             const mailtoLink = `mailto:sidharthvnair3@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-             window.location.href = mailtoLink;
-        });
+        document
+          .getElementById("email-report-btn")
+          .addEventListener("click", () => {
+            const subject = "My 30-Day Fitness Journey Report";
+            let body = "Hello My Love,\n\nHere is my workout report:\n\n";
+            body += `Total Days Completed: ${completedWorkouts.length}/30\n`;
+            body += `Total Calories Burned (Workouts): ${Math.round(
+              totalCaloriesBurned
+            )} kcal\n`;
+            let totalFoodCalories = foodLog.reduce(
+              (acc, item) => acc + item.calories,
+              0
+            );
+            body += `Total Calories Consumed (Today): ${totalFoodCalories} kcal\n`;
+            body += `Total Exercise Minutes: ${Math.round(
+              totalExerciseMinutes
+            )} min\n`;
+            if (initialWeight && currentWeight) {
+              const change = currentWeight - initialWeight;
+              body += `Weight Change: ${change.toFixed(
+                1
+              )} kg (from ${initialWeight} kg to ${currentWeight} kg)\n\n`;
+            }
+            body += "Completed Workouts:\n";
+            completedWorkouts.forEach((w) => {
+              body += `- Day ${w.day}: ${w.name} on ${w.date}\n`;
+            });
+            body += "\nToday's Food Log:\n";
+            foodLog.forEach((f) => {
+              body += `- ${
+                f.name.charAt(0).toUpperCase() + f.name.slice(1)
+              } (Qty: ${f.quantity}): ${f.calories} cal\n`;
+            });
+            body += "\nBest,\n[Your Name]";
+            const mailtoLink = `mailto:sidharthvnair3@gmail.com?subject=${encodeURIComponent(
+              subject
+            )}&body=${encodeURIComponent(body)}`;
+            window.location.href = mailtoLink;
+          });
 
-        document.getElementById('mobile-menu-button').addEventListener('click', () => {
-            document.getElementById('mobile-menu').classList.toggle('hidden');
-        });
-        
+        document
+          .getElementById("mobile-menu-button")
+          .addEventListener("click", () => {
+            document.getElementById("mobile-menu").classList.toggle("hidden");
+          });
+
         // Modal listeners
-        document.getElementById('modal-complete-btn').addEventListener('click', () => {
-            if(currentDayForModal) {
-                completeWorkout(currentDayForModal);
+        document
+          .getElementById("modal-complete-btn")
+          .addEventListener("click", () => {
+            if (currentDayForModal) {
+              completeWorkout(currentDayForModal);
             }
-            modal.classList.add('hidden');
-        });
+            modal.classList.add("hidden");
+          });
 
-        document.getElementById('modal-dismiss-btn').addEventListener('click', () => {
-            modal.classList.add('hidden');
+        document
+          .getElementById("modal-dismiss-btn")
+          .addEventListener("click", () => {
+            modal.classList.add("hidden");
             if (mediaRecorder?.state === "recording") {
-                mediaRecorder.stop();
+              mediaRecorder.stop();
             }
             clearInterval(timerInterval);
-        });
+          });
 
         // --- YouTube Music Search & Player Functions ---
-        musicSearchBtn.addEventListener('click', searchYouTube);
-        musicSearchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                searchYouTube();
-            }
+        musicSearchBtn.addEventListener("click", searchYouTube);
+        musicSearchInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            searchYouTube();
+          }
         });
 
-        youtubeVideoList.addEventListener('click', (e) => {
-            const listItem = e.target.closest('li');
-            if (listItem && listItem.dataset.videoid) {
-                const videoTitle = listItem.querySelector('span.font-medium').textContent;
-                playYouTubeVideo(listItem.dataset.videoid, videoTitle);
-            }
+        youtubeVideoList.addEventListener("click", (e) => {
+          const listItem = e.target.closest("li");
+          if (listItem && listItem.dataset.videoid) {
+            const videoTitle =
+              listItem.querySelector("span.font-medium").textContent;
+            playYouTubeVideo(listItem.dataset.videoid, videoTitle);
+          }
         });
 
-        playPauseBtn.addEventListener('click', () => {
-            if (!player) {
-                musicPlayerMessage.textContent = "Please select a song first.";
-                musicPlayerMessage.classList.remove('hidden');
-                return;
-            }
+        playPauseBtn.addEventListener("click", () => {
+          if (!player) {
+            musicPlayerMessage.textContent = "Please select a song first.";
+            musicPlayerMessage.classList.remove("hidden");
+            return;
+          }
 
-            // Ensure player is ready before attempting to play/pause
-            if (player.getPlayerState() === YT.PlayerState.PLAYING || player.getPlayerState() === YT.PlayerState.BUFFERING) {
-                player.pauseVideo();
-            } else {
-                player.playVideo();
-            }
+          // Ensure player is ready before attempting to play/pause
+          if (
+            player.getPlayerState() === YT.PlayerState.PLAYING ||
+            player.getPlayerState() === YT.PlayerState.BUFFERING
+          ) {
+            player.pauseVideo();
+          } else {
+            player.playVideo();
+          }
         });
 
-        progressBar.addEventListener('input', () => {
-            if (player && player.getDuration()) { // Ensure player and duration are available
-                const newTime = parseFloat(progressBar.value);
-                player.seekTo(newTime, true); // Seek to the new time
-                currentTimeDisplay.textContent = formatTime(newTime);
-                const progressPercent = (newTime / player.getDuration()) * 100;
-                progressBar.style.setProperty('--progress', `${progressPercent}%`);
-            }
+        progressBar.addEventListener("input", () => {
+          if (player && player.getDuration()) {
+            // Ensure player and duration are available
+            const newTime = parseFloat(progressBar.value);
+            player.seekTo(newTime, true); // Seek to the new time
+            currentTimeDisplay.textContent = formatTime(newTime);
+            const progressPercent = (newTime / player.getDuration()) * 100;
+            progressBar.style.setProperty("--progress", `${progressPercent}%`);
+          }
         });
 
         function startProgressBarUpdate() {
-    if (progressBarInterval) clearInterval(progressBarInterval);
-    progressBarInterval = setInterval(() => {
-        if (player && typeof player.getCurrentTime === 'function' && typeof player.getDuration === 'function') {
-            const currentTime = player.getCurrentTime();
-            const duration = player.getDuration();
+          if (progressBarInterval) clearInterval(progressBarInterval);
+          progressBarInterval = setInterval(() => {
+            if (
+              player &&
+              typeof player.getCurrentTime === "function" &&
+              typeof player.getDuration === "function"
+            ) {
+              const currentTime = player.getCurrentTime();
+              const duration = player.getDuration();
 
-            // Only update if duration is valid and not a live stream
-            if (duration && duration > 0 && currentTime >= 0) {
+              // Only update if duration is valid and not a live stream
+              if (duration && duration > 0 && currentTime >= 0) {
                 progressBar.max = duration;
                 progressBar.value = currentTime;
 
                 const progressPercent = (currentTime / duration) * 100;
-                progressBar.style.setProperty('--progress', `${progressPercent}%`);
+                progressBar.style.setProperty(
+                  "--progress",
+                  `${progressPercent}%`
+                );
                 currentTimeDisplay.textContent = formatTime(currentTime);
                 durationTimeDisplay.textContent = formatTime(duration);
-            } else {
+              } else {
                 progressBar.value = 0;
-                progressBar.style.setProperty('--progress', '0%');
-                currentTimeDisplay.textContent = '00:00';
-                durationTimeDisplay.textContent = '00:00';
+                progressBar.style.setProperty("--progress", "0%");
+                currentTimeDisplay.textContent = "00:00";
+                durationTimeDisplay.textContent = "00:00";
+              }
             }
+          }, 500); // update every 500ms
         }
-    }, 500); // update every 500ms
-}
 
-function onPlayerStateChange(event) {
-    const playPauseIcon = document.getElementById('play-pause-icon');
-    const currentTimeDisplay = document.getElementById('current-time');
-    const durationTimeDisplay = document.getElementById('duration-time');
+        function onPlayerStateChange(event) {
+          const playPauseIcon = document.getElementById("play-pause-icon");
+          const currentTimeDisplay = document.getElementById("current-time");
+          const durationTimeDisplay = document.getElementById("duration-time");
 
-    switch (event.data) {
-        case YT.PlayerState.PLAYING:
-            playPauseIcon.classList.remove('fa-play');
-            playPauseIcon.classList.add('fa-pause');
-            startProgressBarUpdate();
-            backgroundVisualizerGif.style.opacity = 0.2;
-            musicPlayerMessage.classList.add('hidden');
-            if (player && player.getDuration()) {
+          switch (event.data) {
+            case YT.PlayerState.PLAYING:
+              playPauseIcon.classList.remove("fa-play");
+              playPauseIcon.classList.add("fa-pause");
+              startProgressBarUpdate();
+              backgroundVisualizerGif.style.opacity = 0.2;
+              musicPlayerMessage.classList.add("hidden");
+              if (player && player.getDuration()) {
                 progressBar.max = player.getDuration();
-                durationTimeDisplay.textContent = formatTime(player.getDuration());
-            }
-            break;
+                durationTimeDisplay.textContent = formatTime(
+                  player.getDuration()
+                );
+              }
+              break;
 
-        case YT.PlayerState.PAUSED:
-        case YT.PlayerState.ENDED:
-            playPauseIcon.classList.remove('fa-pause');
-            playPauseIcon.classList.add('fa-play');
-            clearInterval(progressBarInterval);
-            backgroundVisualizerGif.style.opacity = 0.1;
-            if (event.data === YT.PlayerState.ENDED) {
+            case YT.PlayerState.PAUSED:
+            case YT.PlayerState.ENDED:
+              playPauseIcon.classList.remove("fa-pause");
+              playPauseIcon.classList.add("fa-play");
+              clearInterval(progressBarInterval);
+              backgroundVisualizerGif.style.opacity = 0.1;
+              if (event.data === YT.PlayerState.ENDED) {
                 progressBar.value = 0;
-                progressBar.style.setProperty('--progress', '0%');
-                currentTimeDisplay.textContent = '00:00';
+                progressBar.style.setProperty("--progress", "0%");
+                currentTimeDisplay.textContent = "00:00";
                 nowPlayingTitle.textContent = "Song Ended";
-            }
-            break;
+              }
+              break;
 
-        case YT.PlayerState.BUFFERING:
-            musicPlayerMessage.innerHTML = "Loading...";
-            musicPlayerMessage.classList.remove('hidden');
-            backgroundVisualizerGif.style.opacity = 0.1;
-            if (player && player.getDuration() > 0) {
+            case YT.PlayerState.BUFFERING:
+              musicPlayerMessage.innerHTML = "Loading...";
+              musicPlayerMessage.classList.remove("hidden");
+              backgroundVisualizerGif.style.opacity = 0.1;
+              if (player && player.getDuration() > 0) {
                 progressBar.max = player.getDuration();
-                durationTimeDisplay.textContent = formatTime(player.getDuration());
-            }
-            break;
-    }
-}
+                durationTimeDisplay.textContent = formatTime(
+                  player.getDuration()
+                );
+              }
+              break;
+          }
+        }
 
-progressBar.addEventListener('input', () => {
-    if (player && player.getDuration()) {
-        const newTime = parseFloat(progressBar.value);
-        player.seekTo(newTime, true);
-        currentTimeDisplay.textContent = formatTime(newTime);
-        const progressPercent = (newTime / player.getDuration()) * 100;
-        progressBar.style.setProperty('--progress', `${progressPercent}%`);
-    }
-});
+        progressBar.addEventListener("input", () => {
+          if (player && player.getDuration()) {
+            const newTime = parseFloat(progressBar.value);
+            player.seekTo(newTime, true);
+            currentTimeDisplay.textContent = formatTime(newTime);
+            const progressPercent = (newTime / player.getDuration()) * 100;
+            progressBar.style.setProperty("--progress", `${progressPercent}%`);
+          }
+        });
 
         async function searchYouTube() {
-            const query = musicSearchInput.value.trim();
-            if (!query) {
-                musicPlayerMessage.textContent = "Please enter a song or artist to search.";
-                musicPlayerMessage.classList.remove('hidden');
-                youtubeResultsContainer.classList.add('hidden'); 
-                customMusicPlayer.classList.add('hidden');
-                if (player) {
-                    player.destroy();
-                    player = null;
-                }
-                return; // No need to stop GIF, it's always visible.
+          const query = musicSearchInput.value.trim();
+          if (!query) {
+            musicPlayerMessage.textContent =
+              "Please enter a song or artist to search.";
+            musicPlayerMessage.classList.remove("hidden");
+            youtubeResultsContainer.classList.add("hidden");
+            customMusicPlayer.classList.add("hidden");
+            if (player) {
+              player.destroy();
+              player = null;
             }
+            return; // No need to stop GIF, it's always visible.
+          }
 
-            musicPlayerMessage.classList.add('hidden');
-            youtubeResultsContainer.classList.add('hidden'); 
-            customMusicPlayer.classList.add('hidden');
-            youtubeVideoList.innerHTML = ''; 
+          musicPlayerMessage.classList.add("hidden");
+          youtubeResultsContainer.classList.add("hidden");
+          customMusicPlayer.classList.add("hidden");
+          youtubeVideoList.innerHTML = "";
 
-            try {
-                const videos = await fetchYouTubeVideos(query); 
+          try {
+            const videos = await fetchYouTubeVideos(query);
 
-                if (videos && videos.length > 0) {
-                    youtubeResultsContainer.classList.remove('hidden'); 
-                    videos.forEach(video => {
-                        const li = document.createElement('li');
-                        li.className = 'py-2 flex items-center cursor-pointer hover:bg-gray-100';
-                        li.dataset.videoid = video.videoId;
-                        li.innerHTML = `
+            if (videos && videos.length > 0) {
+              youtubeResultsContainer.classList.remove("hidden");
+              videos.forEach((video) => {
+                const li = document.createElement("li");
+                li.className =
+                  "py-2 flex items-center cursor-pointer hover:bg-gray-100";
+                li.dataset.videoid = video.videoId;
+                li.innerHTML = `
                             <img src="${video.thumbnail}" alt="${video.title}" class="w-16 h-auto rounded mr-4">
                             <div>
                                 <span class="font-medium text-gray-800">${video.title}</span>
                                 <p class="text-sm text-gray-500">${video.channelTitle}</p>
                             </div>
                         `;
-                        youtubeVideoList.appendChild(li);
-                    });
-                } else {
-                    musicPlayerMessage.textContent = "No music found for your search. Try a different query.";
-                    musicPlayerMessage.classList.remove('hidden');
-                }
-            } catch (error) {
-                console.error("Error searching YouTube:", error);
-                musicPlayerMessage.textContent = "An error occurred while searching for music. Please ensure your YouTube API key is valid and try again.";
-                musicPlayerMessage.classList.remove('hidden');
+                youtubeVideoList.appendChild(li);
+              });
+            } else {
+              musicPlayerMessage.textContent =
+                "No music found for your search. Try a different query.";
+              musicPlayerMessage.classList.remove("hidden");
             }
+          } catch (error) {
+            console.error("Error searching YouTube:", error);
+            musicPlayerMessage.textContent =
+              "An error occurred while searching for music. Please ensure your YouTube API key is valid and try again.";
+            musicPlayerMessage.classList.remove("hidden");
+          }
         }
 
         function playYouTubeVideo(videoId, title) {
-            youtubeResultsContainer.classList.add('hidden'); // Hide results list
-            musicPlayerMessage.classList.add('hidden'); // Hide any search/error messages
+          youtubeResultsContainer.classList.add("hidden"); // Hide results list
+          musicPlayerMessage.classList.add("hidden"); // Hide any search/error messages
 
-            // Set current video ID for error linking
-            currentPlayingVideoId = videoId; 
+          // Set current video ID for error linking
+          currentPlayingVideoId = videoId;
 
-            // Ensure custom player is visible before creating the YT player,
-            // as onPlayerReady might fire very quickly.
-            customMusicPlayer.classList.remove('hidden'); 
-            nowPlayingTitle.textContent = `Now Playing: ${title}`;
-            currentTimeDisplay.textContent = '00:00';
-            durationTimeDisplay.textContent = '00:00';
-            progressBar.value = 0; // Set initial progress bar value to 0
-            progressBar.style.setProperty('--progress', '0%'); // Reset visual fill
+          // Ensure custom player is visible before creating the YT player,
+          // as onPlayerReady might fire very quickly.
+          customMusicPlayer.classList.remove("hidden");
+          nowPlayingTitle.textContent = `Now Playing: ${title}`;
+          currentTimeDisplay.textContent = "00:00";
+          durationTimeDisplay.textContent = "00:00";
+          progressBar.value = 0; // Set initial progress bar value to 0
+          progressBar.style.setProperty("--progress", "0%"); // Reset visual fill
 
-            if (player) {
-                player.destroy(); // Destroy existing player if any
-                player = null; // Clear player reference
-            }
+          if (player) {
+            player.destroy(); // Destroy existing player if any
+            player = null; // Clear player reference
+          }
 
-            // The 'youtube-player-container' div is where the API will build the iframe
-            player = new YT.Player('youtube-player-container', { // Target the container div
-                height: '315', // These dimensions don't matter much as it's hidden
-                width: '560',
-                videoId: videoId,
-                playerVars: {
-                    'autoplay': 1,
-                    'controls': 0,        // Hide YouTube's controls
-                    'disablekb': 1,       // Disable keyboard controls
-                    'modestbranding': 1,  // Hide YouTube logo in control bar
-                    'rel': 0,             // Do not show related videos at the end
-                    'showinfo': 0,        // Do not show video title and uploader
-                    'iv_load_policy': 3   // Hide video annotations by default
-                },
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange, // Listen for state changes
-                    'onError': onPlayerError // Crucial for error handling
-                }
-            });
+          // The 'youtube-player-container' div is where the API will build the iframe
+          player = new YT.Player("youtube-player-container", {
+            // Target the container div
+            height: "315", // These dimensions don't matter much as it's hidden
+            width: "560",
+            videoId: videoId,
+            playerVars: {
+              autoplay: 1,
+              controls: 0, // Hide YouTube's controls
+              disablekb: 1, // Disable keyboard controls
+              modestbranding: 1, // Hide YouTube logo in control bar
+              rel: 0, // Do not show related videos at the end
+              showinfo: 0, // Do not show video title and uploader
+              iv_load_policy: 3, // Hide video annotations by default
+            },
+            events: {
+              onReady: onPlayerReady,
+              onStateChange: onPlayerStateChange, // Listen for state changes
+              onError: onPlayerError, // Crucial for error handling
+            },
+          });
         }
 
         function onPlayerReady(event) {
-            event.target.playVideo();
-            // Player is ready, onPlayerStateChange (PLAYING) will handle visual updates
-            // Ensure the GIF opacity is adjusted when ready
-            backgroundVisualizerGif.style.opacity = 0.2; 
+          event.target.playVideo();
+          // Player is ready, onPlayerStateChange (PLAYING) will handle visual updates
+          // Ensure the GIF opacity is adjusted when ready
+          backgroundVisualizerGif.style.opacity = 0.2;
         }
-        
+
         // IMPORTANT: To make `fetchYouTubeVideos` work, you will need a YouTube Data API v3 Key.
         // Replace 'AIzaSyAdQGqaezhWNMQWdwvkE2gWweV1Riy4l6E' with your actual YouTube Data API Key.
         // You can get one from Google Cloud Console (APIs & Services -> Credentials).
         // For security, it's highly recommended to restrict your API key to your domain.
         async function fetchYouTubeVideos(query) {
-            const YOUTUBE_API_KEY = 'AIzaSyBMrqaIDnF4B59eVximFZntDLYdn7K4r2k'; // <<< REPLACE THIS WITH YOUR YOUTUBE API KEY
-            const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key=${YOUTUBE_API_KEY}&maxResults=5`; 
+          const YOUTUBE_API_KEY = "AIzaSyBMrqaIDnF4B59eVximFZntDLYdn7K4r2k"; // <<< REPLACE THIS WITH YOUR YOUTUBE API KEY
+          const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(
+            query
+          )}&type=video&key=${YOUTUBE_API_KEY}&maxResults=5`;
 
-            if (YOUTUBE_API_KEY === 'YOUTUBE_API_KEY' || !YOUTUBE_API_KEY) {
-                console.error("YouTube API Key is not set. Please replace 'AIzaSyBMrqaIDnF4B59eVximFZntDLYdn7K4r2k' with your actual API key.");
-                musicPlayerMessage.textContent = "YouTube API Key is missing. Please set it up to search for music.";
-                musicPlayerMessage.classList.remove('hidden');
-                return [];
+          if (YOUTUBE_API_KEY === "YOUTUBE_API_KEY" || !YOUTUBE_API_KEY) {
+            console.error(
+              "YouTube API Key is not set. Please replace 'AIzaSyBMrqaIDnF4B59eVximFZntDLYdn7K4r2k' with your actual API key."
+            );
+            musicPlayerMessage.textContent =
+              "YouTube API Key is missing. Please set it up to search for music.";
+            musicPlayerMessage.classList.remove("hidden");
+            return [];
+          }
+
+          try {
+            const response = await fetch(searchUrl);
+            const data = await response.json();
+
+            if (data.error) {
+              console.error("YouTube API Error:", data.error);
+              musicPlayerMessage.textContent = `YouTube API Error: ${
+                data.error.message || "Unknown error"
+              }. Check your API key and quota.`;
+              musicPlayerMessage.classList.remove("hidden");
+              return [];
             }
 
-            try {
-                const response = await fetch(searchUrl);
-                const data = await response.json();
-                
-                if (data.error) {
-                    console.error("YouTube API Error:", data.error);
-                    musicPlayerMessage.textContent = `YouTube API Error: ${data.error.message || 'Unknown error'}. Check your API key and quota.`;
-                    musicPlayerMessage.classList.remove('hidden');
-                    return [];
-                }
-
-                if (data.items && data.items.length > 0) {
-                    return data.items.map(item => ({
-                        videoId: item.id.videoId,
-                        title: item.snippet.title,
-                        thumbnail: item.snippet.thumbnails.default.url,
-                        channelTitle: item.snippet.channelTitle
-                    }));
-                }
-                return [];
-            } catch (error) {
-                console.error("Error fetching YouTube video IDs:", error);
-                musicPlayerMessage.textContent = "An error occurred while fetching YouTube videos. Check your network connection or API key.";
-                musicPlayerMessage.classList.remove('hidden');
-                return [];
+            if (data.items && data.items.length > 0) {
+              return data.items.map((item) => ({
+                videoId: item.id.videoId,
+                title: item.snippet.title,
+                thumbnail: item.snippet.thumbnails.default.url,
+                channelTitle: item.snippet.channelTitle,
+              }));
             }
+            return [];
+          } catch (error) {
+            console.error("Error fetching YouTube video IDs:", error);
+            musicPlayerMessage.textContent =
+              "An error occurred while fetching YouTube videos. Check your network connection or API key.";
+            musicPlayerMessage.classList.remove("hidden");
+            return [];
+          }
         }
 
         // --- INITIALIZATION ---
@@ -1248,11 +2266,10 @@ progressBar.addEventListener('input', () => {
 
         // Ensure GIF is visible on page load
         if (backgroundVisualizerGif) {
-            backgroundVisualizerGif.src = BACKGROUND_GIF_URL; // Set GIF source
-            backgroundVisualizerGif.style.opacity = 0.1; // Set initial subtle opacity
+          backgroundVisualizerGif.src = BACKGROUND_GIF_URL; // Set GIF source
+          backgroundVisualizerGif.style.opacity = 0.1; // Set initial subtle opacity
         }
-
-    });
+      });
     </script>
-</body>
+  </body>
 </html>
